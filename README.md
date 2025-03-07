@@ -1,2 +1,4 @@
-# tomato-robot
-Project intended for demonstration at Daejon
+# Tomato Robot
+Real-time tomato detection and tracking system for demonstration at Daejon.
+
+## Project Structure
