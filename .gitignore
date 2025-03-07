@@ -188,5 +188,4 @@ ENV/
 *.h5
 
 # Keep empty directories
-!src/**/
-!src/**/.gitkeep
+!**/.gitkeep

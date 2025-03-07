@@ -1,21 +1,18 @@
-
 [[source]]
 url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[[source]]
+url = "https://download.pytorch.org/whl/cu118"
+verify_ssl = false
+name = "pytorch"
+
 [packages]
-torch = "*"
-torchvision = "*"
-transformers = "*"
-opencv-python = "*"
-numpy = "*"
-pillow = "*"
-segment-anything = "*"
-huggingface-hub = "*"
-scipy = "*"
-matplotlib = "*"
-tqdm = "*"
+torch = {version="*", index = "pytorch"}
+torchvision = {version="*", index = "pytorch"}
+torchaudio = {version="*", index = "pytorch"}
+gradio = "*"
 
 [dev-packages]
 pytest = "*"
@@ -24,4 +21,4 @@ isort = "*"
 flake8 = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.11"
