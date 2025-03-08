@@ -1,5 +1,3 @@
-import sys
-import os
 import av 
 import cv2
 import tempfile
@@ -7,25 +5,9 @@ import supervision as sv
 import gradio as gr
 from gradio_webrtc import WebRTC
 from huggingface_hub import hf_hub_download
-
-# Get the absolute path of the script
-script_path = os.path.abspath(__file__)
-
-# Get the directory containing the script
-script_dir = os.path.dirname(script_path)
-
-# Get the project root directory (one level up from script directory)
-project_root = os.path.abspath(os.path.join(script_dir, '..'))
-
-# Add the project root to the Python path
-sys.path.append(project_root)
-
-# Now you can import modules from src
-print(f"Added {project_root} to Python path")
-
+from path_setup import setup_project_root
+setup_project_root()
 from src.yolo_model.yolov10 import YOLOv10
-
-
 
 
 
