@@ -2,16 +2,21 @@ import gradio as gr
 import torch 
 from gradio_webrtc import WebRTC
 from PIL import Image
+import cv2
 from typing import Tuple, Dict, Optional, Union, Any
-from utils.florence import load_florence_model, run_florence_inference,\
+from src.florence2_model.florence import load_florence_model, run_florence_inference,\
     FLORENCE_CAPTION_TO_PHRASE_GROUNDING_TASK, FLORENCE_DETAILED_CAPTION_TASK, FLORENCE_OPEN_VOCABULARY_TASK
-from utils.modes import IMAGE_INFERENCE_MODES, IMAGE_OPEN_VOCABULARY_DETECTION_MODE, IMAGE_CAPTION_GROUNDING_MODE
+from src.florence2_model.modes import IMAGE_INFERENCE_MODES, IMAGE_OPEN_VOCABULARY_DETECTION_MODE, IMAGE_CAPTION_GROUNDING_MODE
 import supervision as sv
-
+from huggingface_hub import hf_hub_download # for downloading YOLOv10 model
+from src.yolo_model.yolov10 import YOLOv10
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 FLORENCE_MODEL, FLORENCE_PROCESSOR = load_florence_model(device=DEVICE)
-
+yolo_model_file = hf_hub_download(
+    repo_id="onnx-community/yolov10n", filename="onnx/model.onnx"
+)
+YOLO_MODEL = YOLOv10(yolo_model_file)
 
 # Manually enters a context manager that automatically casts CUDA operations to use bfloat16 precision. (Using bfloat16 can reduce memory usage and improve computation speed without the full loss of accuracy you might get from lower-precesion computations.
 # This is similar to the common use of FP16 autocast but tailored for bfloat16, which is particularly useful on hardware that supports it.)
@@ -170,17 +175,23 @@ def process_image(
 
 @torch.inference_mode()
 @torch.autocast(device_type=DEVICE, dtype=torch.bfloat16)
-def process_stream(frame):
+def process_stream(frame, conf_threshold=0.3):
     """
     This function is used to process the video frame.
     It takes a frame as input and returns a processed frame.
     """
-    return frame
+    frame = cv2.resize(frame, (YOLO_MODEL.input_width, YOLO_MODEL.input_height)) # YOLO 모델에 맞게 크기 조정
+    result_frame = YOLO_MODEL.detect_objects(frame, conf_threshold)
+    return result_frame
 
 # TODO: WebRTC 화질 조정하기
 with gr.Blocks() as demo:
     # 이미지 탭
     with gr.Tab("Image"):
+        gr.HTML(
+            """
+            <h1 style="text-align: center"> Florence2 - Demo </h1>
+            """)
 
         image_processing_mode_dropdown_component = gr.Dropdown(
                 choices=IMAGE_INFERENCE_MODES, 
@@ -230,10 +241,18 @@ with gr.Blocks() as demo:
         )
     # 웹캠 탭
     with gr.Tab("Video"):
+        gr.HTML(
+            """
+            <h1 style="text-align: center"> YOLOv10 - Demo </h1>
+            """)
         stream = WebRTC(label="Webcam", rtc_configuration=None)
 
     #TODO: pass_frame()을 inference 함수로 대체
     stream.stream(fn=process_stream, inputs=stream, outputs=stream)
-demo.launch(share=True)
+
+# In python, every module has a built-in variable called __name__. When you run a Python file directly, python sets __name__ to "__main__"
+# This ensures demo.launch() is only called when you intent run this file directly
+if __name__ == "__main__":
+    demo.launch(share=True)
 
 
