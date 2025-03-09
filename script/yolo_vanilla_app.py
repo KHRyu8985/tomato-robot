@@ -5,10 +5,9 @@ import supervision as sv
 import gradio as gr
 from gradio_webrtc import WebRTC
 from huggingface_hub import hf_hub_download
-from path_setup import setup_project_root
-setup_project_root()
+# from path_setup import setup_project_root
+# setup_project_root()
 from src.yolo_model.yolov10 import YOLOv10
-
 
 
 model_file = hf_hub_download(
