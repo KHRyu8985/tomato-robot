@@ -1,3 +1,4 @@
+import autorootcwd
 import gradio as gr
 import torch 
 import cv2
