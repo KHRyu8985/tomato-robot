@@ -12,7 +12,21 @@ import supervision as sv
 import numpy as np
 import os
 
+
 latest_frame = None
+
+# Define the directory containing the images
+image_dir = "data/pictures"
+
+# Retrieve a list of image file paths (adjust the extensions as needed)
+image_files = [os.path.join(image_dir, file) 
+               for file in os.listdir(image_dir) 
+               if file.endswith((".png", ".jpg", ".jpeg"))]
+image_files = image_files[:10] # 10개만 사용
+
+# Gradio expects examples as a list of lists where each inner list corresponds to the input components.
+# For a single image input, each example is a one-element list
+example_list = [[img] for img in image_files]
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 FLORENCE_MODEL, FLORENCE_PROCESSOR = load_florence_model(device=DEVICE)
@@ -83,13 +97,23 @@ def convert_to_od_format(data: Dict[str, Any]) -> Dict[str, Any]:
     """ 
     bboxes = data.get('bboxes', []) # data.get(key, default) -> returns value associated with key if it exsists, otherwise returns default
     labels = data.get('bboxes_labels', [])
-
+    
     od_results = {
         'bboxes': bboxes,
         'labels': labels
     }
     return od_results
 
+def load_example_image(example):
+    """
+    Each example in the Gallery is a file path, but when you select one, 
+    it wraps that string in a tuple (e.g. ("data/pictures/example1.jpg",)).
+    """
+    # if 'example' is a list or tuple, take the first element
+    while isinstance(example, (list, tuple)):
+        example = example[0]
+    image = Image.open(example)
+    return image
 
 @torch.inference_mode()
 @torch.autocast(device_type=DEVICE, dtype=torch.bfloat16)
@@ -263,6 +287,9 @@ with gr.Blocks(css=css) as demo:
             inputs=image_processing_mode_dropdown_component,
             outputs=[image_processing_text_input_component, image_processing_text_output_component]
         )
+        # Set examples        
+        # examples = gr.Gallery(value=image_files, columns=3, height='auto')
+        examples = gr.Examples(examples=example_list, inputs=image_processing_image_input_component)
     # 웹캠 탭
     with gr.Tab("Video"):
         with gr.Row(elem_classes="container"):
@@ -282,6 +309,7 @@ with gr.Blocks(css=css) as demo:
                 capture_button = gr.Button("Submit", variant="primary")
 
     #TODO: process_stream() 구현
+    # examples.select(fn=load_example_image, inputs=[examples], outputs=[image_processing_image_input_component])
     stream.stream(fn=process_stream, inputs=stream, outputs=stream)
     capture_button.click(fn=submit_prompt, inputs=[stream, prompt], outputs=captured_image)
 demo.launch(share=True)
