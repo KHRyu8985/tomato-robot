@@ -151,7 +151,7 @@ def process_image(
         
         converted_result = convert_to_od_format(result[task]) # convert to OD
 
-        text_output = ",".join(converted_result['labels'])
+        text_output = converted_result['labels']
         bbox_coordinates = []
         for i in range(len(converted_result['bboxes'])):
             x1, y1, x2, y2 = converted_result['bboxes'][i]
