@@ -5,7 +5,7 @@ from PIL import Image
 import cv2
 from typing import Tuple, Dict, Optional, Union, Any
 from src.florence2_model.florence import load_florence_model, run_florence_inference,\
-    FLORENCE_CAPTION_TO_PHRASE_GROUNDING_TASK, FLORENCE_DETAILED_CAPTION_TASK, FLORENCE_OPEN_VOCABULARY_TASK
+    FLORENCE_CAPTION_TO_PHRASE_GROUNDING_TASK, FLORENCE_MORE_DETAILED_CAPTION_TASK, FLORENCE_OPEN_VOCABULARY_TASK
 from src.florence2_model.modes import IMAGE_INFERENCE_MODES, IMAGE_OPEN_VOCABULARY_DETECTION_MODE, IMAGE_CAPTION_GROUNDING_MODE
 import supervision as sv
 from huggingface_hub import hf_hub_download # for downloading YOLOv10 model
@@ -136,7 +136,7 @@ def process_image(
         
     
     elif mode == IMAGE_CAPTION_GROUNDING_MODE:
-        task = FLORENCE_DETAILED_CAPTION_TASK
+        task = FLORENCE_MORE_DETAILED_CAPTION_TASK
         _, result = run_florence_inference(
             FLORENCE_MODEL, 
             FLORENCE_PROCESSOR, 
