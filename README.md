@@ -36,6 +36,13 @@ The project is organized as follows:
    pipenv shell
    ```
 
+### Download Checkpoint
+1. Download SAM2 model checkpoint:
+   ```
+   cd checkpoints
+   ./download_ckpts.sh
+   ```
+
 ### Environment Management
 
 1. View installed packages and their dependencies:

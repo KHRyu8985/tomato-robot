@@ -32,6 +32,11 @@ gradio-webrtc = "*"
 supervision = "*"
 timm = "*"
 autorootcwd = "*"
+mediapipe = "*"
+tensorflow = "*"
+tf-nightly = "*"
+flask = "*"
+flask-socketio = "*"
 
 [dev-packages]
 
