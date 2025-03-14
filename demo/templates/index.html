@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand Gesture Recognition and Tracking</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; background-color: #000000; }
+        #video_feed, #feature_feed { height: 40%; border: 2px solid black; border-radius: 15px; margin: 20px auto; display: block; }
+        button { padding: 10px; margin: 10px; font-size: 16px; font-weight: bold; border-radius: 30px; }
+    </style>
+</head>
+<body>
+    <h1 style="color: white; font-size: 40px; font-weight: bold;">Hand Gesture Recognition and Tracking</h1>
+    <img id="video_feed" src="" alt="Video Feed" style="display:none;">
+    <br>
+    <img id="feature_feed" src="" alt="Feature Visualization" style="display:none;">
+    <br>
+    <button id="start-btn" onclick="startStream()">Start Stream</button>
+    <button id="stop-btn" onclick="stopStream()" style="display:none;">Stop Stream</button>
+    <button id="toggle-btn" onclick="toggleFeature()">Show Feature Visualization</button>
+
+    <script>
+        var socket = io();
+        var showFeature = false;
+        var streaming = false;
+
+        socket.on('video_frame', function(data) {
+            if (streaming) {
+                document.getElementById('video_feed').src = 'data:image/jpeg;base64,' + data.image;
+            }
+        });
+  
+        socket.on('feature_frame', function(data) {
+            if (showFeature && streaming) {
+                document.getElementById('feature_feed').src = 'data:image/jpeg;base64,' + data.image;
+            }
+        });
+
+        function startStream() {
+            socket.emit('start_stream');
+            streaming = true;
+
+            document.getElementById('video_feed').style.display = "block";
+            document.getElementById('start-btn').style.display = "none";
+            document.getElementById('stop-btn').style.display = "inline-block";
+        }
+
+        function stopStream() {
+            socket.emit('stop_stream');
+            streaming = false;
+            document.getElementById('video_feed').style.display = "none";
+            document.getElementById('feature_feed').style.display = "none";
+            document.getElementById('stop-btn').style.display = "none";
+            document.getElementById('start-btn').style.display = "inline-block";
+        }
+
+        function toggleFeature() {
+            showFeature = !showFeature;
+            socket.emit('set_feature', { show_feature: showFeature });
+            if (showFeature && streaming) {
+                document.getElementById('feature_feed').style.display = "block";
+            } else {
+                document.getElementById('feature_feed').style.display = "none";
+            }
+            document.getElementById("toggle-btn").innerText = showFeature ? "Feature: OFF" : "Feature: ON";
+        }
+    </script>
+</body>
+</html>

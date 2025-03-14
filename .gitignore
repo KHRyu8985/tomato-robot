@@ -186,6 +186,7 @@ ENV/
 *.onnx
 *.bin
 *.h5
+checkpoints/*.pt
 
 # Keep empty directories
 !**/.gitkeep
