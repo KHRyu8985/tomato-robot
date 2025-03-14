@@ -4,7 +4,7 @@ import supervision as sv
 from .florence import (
     load_florence_model,
     run_florence_inference,
-    FLORENCE_OPEN_VOCABULARY_TASK,
+    FLORENCE_OPEN_VOCABULARY_DETECTION_TASK,
     FLORENCE_DETAILED_CAPTION_TASK,
     FLORENCE_CAPTION_TO_PHRASE_GROUNDING_TASK,
 )
@@ -92,7 +92,7 @@ def convert_to_od_format(data: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def run_open_vocabulary_detection(image_input, text_input):
-    task = FLORENCE_OPEN_VOCABULARY_TASK
+    task = FLORENCE_OPEN_VOCABULARY_DETECTION_TASK
     _, result = run_florence_inference(
         FLORENCE_MODEL,
         FLORENCE_PROCESSOR,
@@ -132,7 +132,7 @@ def run_caption_phrase_grounding(image_input, text_input):
         DEVICE,
         image_input,
         task,
-    )  # no text input
+    )
     # TODO:text input을 phrase grounding에 반영할 수 있는지 확인
 
     caption = result[FLORENCE_DETAILED_CAPTION_TASK]
@@ -159,4 +159,3 @@ def run_caption_phrase_grounding(image_input, text_input):
     annotated_image = annotate_image(image_input, detections)
 
     return annotated_image, caption, bbox_coordinates
-
