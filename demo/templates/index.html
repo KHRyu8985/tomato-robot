@@ -3,69 +3,411 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hand Gesture Recognition and Tracking</title>
+    <title>Tomato Robot</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍅</text></svg>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <style>
-        body { text-align: center; font-family: Arial, sans-serif; background-color: #000000; }
-        #video_feed, #feature_feed { height: 40%; border: 2px solid black; border-radius: 15px; margin: 20px auto; display: block; }
-        button { padding: 10px; margin: 10px; font-size: 16px; font-weight: bold; border-radius: 30px; }
+        body {
+            font-family: Pretendard, sans-serif;
+            background-color: #ffffff; 
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow-x: hidden;
+        }
+        #head-container { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            height: 50px;
+            padding: 0 25px;
+        }
+        .switch-container {
+            display: flex;
+            align-items: center;
+        }
+        .switch-label {
+            color: #0004FF;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 4, 255, 0.1);
+            transition: .4s;
+            border-radius: 34px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #0004FF;
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px #0004FF;
+        }
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+        
+        .background-circle {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(0, 4, 255, 0.1);
+            z-index: -1;
+        }
+        #circle1 {
+            width: 15vw;
+            height: 15vw;
+            top: 120px;
+            right: 10%;
+        }
+        #circle2 {
+            width: 10vw;
+            height: 10vw;
+            top: 350px;
+            left: 10%;
+        }
+        #circle3 {
+            width: 10vw;
+            height: 10vw;
+            top: 500px;
+            right: 25%;
+        }
+        #circle4 {
+            width: 25vw;
+            height: 25vw;
+            top: 800px;
+            left: 0px;
+        }
+        #circle5 {
+            width: 5vw;
+            height: 5vw;
+            top: 100px;
+            left: 5%;
+        }
+        #circle6 {
+            width: 20vw;
+            height: 20vw;
+            top: 900px;
+            right: 5%;
+        }
+        #body-container { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            width: 100%; 
+            height: 100%; 
+            margin-top: 20vh;
+            position: relative;
+            z-index: 1;
+        }
+        #body-container p { color: #0004FF; font-size: 28px; font-weight: bold; margin-bottom: 20px; }
+        #title { display: flex; justify-content: center; align-items: center; width: 100%; height: 50px; margin-bottom: 20px; }
+        #title p { color: #0004FF; font-size: 32px; font-weight: bold; margin-bottom: 20px; }
+
+        #waiting-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
+        #waiting-screen h1 { color: #0004FF; font-size: 28px; font-weight: bold; margin-bottom: 20px; }
+        #waiting-screen p { color: #aaaaaa; font-size: 20px; margin-bottom: 20px; }
+
+        #stream-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;}
+
+        #feature-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;}
+
+        #video_feed, #feature_feed { height: 40%; border-radius: 15px; margin: 20px auto; display: block; }
+
+        button { display: flex; justify-content: center; align-items: center; padding: 15px 30px; border: none; border-radius: 30px;
+            background-color: rgba(0, 4, 255, 0.1); color: #0004FF; font-size: 28px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); }
     </style>
 </head>
 <body>
-    <h1 style="color: white; font-size: 40px; font-weight: bold;">Hand Gesture Recognition and Tracking</h1>
-    <img id="video_feed" src="" alt="Video Feed" style="display:none;">
-    <br>
-    <img id="feature_feed" src="" alt="Feature Visualization" style="display:none;">
-    <br>
-    <button id="start-btn" onclick="startStream()">Start Stream</button>
-    <button id="stop-btn" onclick="stopStream()" style="display:none;">Stop Stream</button>
-    <button id="toggle-btn" onclick="toggleFeature()">Show Feature Visualization</button>
+    <!-- 배경 원 요소 추가 -->
+    <div class="background-circle" id="circle1"></div>
+    <div class="background-circle" id="circle2"></div>
+    <div class="background-circle" id="circle3"></div>
+    <div class="background-circle" id="circle4"></div>
+    <div class="background-circle" id="circle5"></div>
+    <div class="background-circle" id="circle6"></div>
 
+    <div id="head-container">
+        <p style="color: #0004FF; font-size: 32px; font-weight: bold;">Tomato Robot 🤖</p>
+        <div class="switch-container">
+            <span class="switch-label">Feature Visualization</span>
+            <label class="switch">
+                <input type="checkbox" id="feature-toggle" onclick="toggleFeature()">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+    
+    <div id="body-container">
+        <div id="title"><p>안녕하세요🙌</p></div>
+
+        <div id="waiting-screen">
+            <canvas id="canvas"></canvas>
+            <h1>카메라를 향해 손을 내밀어 주세요!</h1>
+            <p>waiting for hand...</p>
+        </div>
+
+        <div id="stream-screen" style="display:none;">
+            <img id="video_feed" src="" alt="Video Feed">
+        </div>
+        
+        <div id="feature-screen" style="display:none;">
+            <img id="feature_feed" src="" alt="Feature Visualization"">
+        </div>
+
+        <!-- <button id="harvest-button">🍅 수확하기</button> -->
+    </div>
+    
     <script>
         var socket = io();
         var showFeature = false;
         var streaming = false;
+        var firstFrameReceived = false;
+        var lastFeatureState = false;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            startStream();
+            document.getElementById('feature-screen').style.display = "none";
+            document.getElementById('feature-toggle').checked = false;
+        });
+
+        function setFeatureState(enabled) {
+            showFeature = enabled;
+            document.getElementById('feature_feed').style.display = enabled ? "block" : "none";
+            document.getElementById('feature-toggle').checked = enabled;
+            socket.emit('set_feature', { show_feature: enabled });
+        }
+
+        function toggleUI(showStream) {
+            document.getElementById('waiting-screen').style.display = showStream ? 'none' : 'flex';
+            document.getElementById('stream-screen').style.display = showStream ? 'block' : 'none';
+            if (showFeature) {
+                document.getElementById('feature-screen').style.display = showStream ? 'block' : 'none';
+            }
+            
+            if (!showStream) {
+                lastFeatureState = showFeature;
+                if (!lastFeatureState) {
+                    setFeatureState(false);
+                }
+            } 
+            else if (lastFeatureState) {
+                setFeatureState(true);
+            }
+
+            if (showStream) {
+                document.getElementById('title').innerHTML = '<p>수확할 <span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">토마토</span>를 손가락으로 선택해주세요👆🏻</p>';
+            } else {
+                document.getElementById('title').innerHTML = '<p>안녕하세요🙌</p>';
+            }
+        }
+
+        function toggleFeature() {
+            const isChecked = document.getElementById('feature-toggle').checked;
+            setFeatureState(isChecked);
+            lastFeatureState = isChecked;
+        }
 
         socket.on('video_frame', function(data) {
             if (streaming) {
                 document.getElementById('video_feed').src = 'data:image/jpeg;base64,' + data.image;
+                
+                if (!firstFrameReceived) {
+                    firstFrameReceived = true;
+                    toggleUI(true);
+                    
+                    const loadingIndicator = document.getElementById('loading-indicator');
+                    if (loadingIndicator) {
+                        loadingIndicator.remove();
+                    }
+                }
             }
         });
-  
+
         socket.on('feature_frame', function(data) {
+            console.log(showFeature, streaming, firstFrameReceived);
             if (showFeature && streaming) {
                 document.getElementById('feature_feed').src = 'data:image/jpeg;base64,' + data.image;
+                document.getElementById('feature-screen').style.display = "block";
+            } else {
+                document.getElementById('feature-screen').style.display = "none";
             }
+        });
+
+        socket.on('segment_status', function(data) {
+            if (data.detected) {
+                if (data.resumed) {
+                    console.log("Stream resumed");
+                    toggleUI(true);
+                }
+            } else if (data.timeout) {
+                console.log("Object not detected for 5 seconds, stream paused");
+                toggleUI(false);
+            }
+        });
+
+        socket.on('stream_paused', function() {
+            console.log("Stream paused");
+            toggleUI(false);
         });
 
         function startStream() {
             socket.emit('start_stream');
             streaming = true;
-
-            document.getElementById('video_feed').style.display = "block";
-            document.getElementById('start-btn').style.display = "none";
-            document.getElementById('stop-btn').style.display = "inline-block";
         }
+    </script>
+    
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+        function main() {
+            const canvas = document.getElementById('canvas');
+            const renderer = new THREE.WebGLRenderer({
+                canvas, 
+                antialias: true,
+                alpha: true
+            });
+            
+            renderer.setSize(window.innerWidth * 0.2, window.innerWidth * 0.2);
+            
+            renderer.setClearColor(0x000000, 0);
 
-        function stopStream() {
-            socket.emit('stop_stream');
-            streaming = false;
-            document.getElementById('video_feed').style.display = "none";
-            document.getElementById('feature_feed').style.display = "none";
-            document.getElementById('stop-btn').style.display = "none";
-            document.getElementById('start-btn').style.display = "inline-block";
-        }
+            const fov = 75;
+            const aspect = canvas.clientWidth / canvas.clientHeight;
+            const near = 0.1;
+            const far = 100;
 
-        function toggleFeature() {
-            showFeature = !showFeature;
-            socket.emit('set_feature', { show_feature: showFeature });
-            if (showFeature && streaming) {
-                document.getElementById('feature_feed').style.display = "block";
-            } else {
-                document.getElementById('feature_feed').style.display = "none";
+            const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+            camera.position.z = 7;
+            camera.position.y = 0;
+
+            const scene = new THREE.Scene();
+
+            // Lighting
+            {
+                const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+                scene.add(ambientLight);
+                
+                const mainLight = new THREE.DirectionalLight(0xffffff, 0.5);
+                mainLight.position.set(5, 10, 7);
+                scene.add(mainLight);
             }
-            document.getElementById("toggle-btn").innerText = showFeature ? "Feature: OFF" : "Feature: ON";
+
+            const handModel = createCuteHand();
+            handModel.scale.set(0.55, 0.55, 0.55);
+            scene.add(handModel);
+            
+            function createFingers(handGroup, material) {
+                const fingerPositions = [
+                    { x: -2, z: 3.5, scale: 0.9, rotationX: -0.1, name: "소지" },
+                    { x: -0.7, z: 4, scale: 1, rotationX: 0, name: "약지" },
+                    { x: 0.7, z: 4.2, scale: 1.1, rotationX: 0, name: "중지" },
+                    { x: 2, z: 3.8, scale: 0.95, rotationX: 0.1, name: "검지" }
+                ];
+                
+                fingerPositions.forEach(fp => {
+                    const finger = createCuteFinger(material, fp.scale);
+                    finger.position.set(fp.x, 0, fp.z);
+                    finger.rotation.x = fp.rotationX;
+                    handGroup.add(finger);
+                });
+                
+                const thumb = createCuteFinger(material, 0.9);
+                thumb.position.set(2, 0, 1);
+                thumb.rotation.z = -Math.PI / 4;
+                thumb.rotation.y = Math.PI / 5;
+                handGroup.add(thumb);
+            }
+            
+            function createCuteFinger(material, scale = 1) {
+                const fingerGroup = new THREE.Group();
+                
+                const segmentGeometry = new THREE.CylinderGeometry(0.8 * scale, 0.6 * scale, 2.5 * scale, 8);
+                const segment = new THREE.Mesh(segmentGeometry, material);
+                segment.rotation.x = Math.PI / 2;
+                segment.position.z = 1.2 * scale;
+                fingerGroup.add(segment);
+                
+                const tipGeometry = new THREE.SphereGeometry(0.8 * scale, 8, 8);
+                const tip = new THREE.Mesh(tipGeometry, material);
+                tip.position.z = 2.5 * scale;
+                fingerGroup.add(tip);
+                
+                return fingerGroup;
+            }
+            
+            function createCuteHand() {
+                const handGroup = new THREE.Group();
+                const handMaterial = new THREE.MeshLambertMaterial({
+                    color: 0xFFDFC4,
+                    emissive: 0x884548
+                });
+                
+                const palmGeometry = new THREE.SphereGeometry(2.5, 32, 32);
+                const palm = new THREE.Mesh(palmGeometry, handMaterial);
+                palm.scale.set(1.2, 0.8, 1.5);
+                palm.position.set(0, 0, 1);
+                handGroup.add(palm);
+                
+                createFingers(handGroup, handMaterial);
+                
+                return handGroup;
+            }
+            
+            // Animation
+            function render(time) {
+                time *= 0.001;
+                
+                handModel.rotation.y = Math.sin(time * 0.5) * 0.3;
+                handModel.rotation.x = Math.sin(time * 0.7) * 0.1 + 0.2;
+                handModel.position.y = Math.sin(time * 1.5) * 0.5;
+                
+                renderer.render(scene, camera);
+                requestAnimationFrame(render);
+            }
+            
+            window.addEventListener('resize', () => {
+                const width = window.innerWidth * 0.5;
+                const height = window.innerWidth * 0.5;
+                
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                
+                renderer.setSize(width, height);
+            });
+            
+            requestAnimationFrame(render);
         }
+        main();
     </script>
 </body>
 </html>
+

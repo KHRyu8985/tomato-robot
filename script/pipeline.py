@@ -28,7 +28,7 @@ def pipeline(device=0, show_feature=False):
             if pca_visualization is not None:
                 cv.imshow('PCA Visualization', pca_visualization)
         else:
-            debug_image = sam2_tracker.process_frame(image, debug_image, point_coords)
+            debug_image, _ = sam2_tracker.process_frame(image, debug_image, point_coords)
             cv.imshow('Hand Gesture Recognition', debug_image)
 
         if cv.waitKey(10) & 0xFF == 27:

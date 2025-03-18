@@ -29,10 +29,21 @@ class SAM2Tracker:
                 else:
                     _, out_mask_logits = self.predictor.track(image)
 
+        has_valid_segment = False
+        
         if out_mask_logits is not None:
+            if abs(out_mask_logits.min().item() + 1024) < 1.0 and abs(out_mask_logits.max().item() + 1024) < 1.0:
+                has_valid_segment = False
+            else:
+                threshold = -15  # threshold for valid segment
+                positive_pixel_count = (out_mask_logits > threshold).sum().item()
+                
+                if positive_pixel_count > 100:  # minimum pixel count threshold
+                    has_valid_segment = True
+            
             debug_image = show_mask_overlay(debug_image, out_mask_logits, self.prompt)
-
-        return debug_image
+        
+        return debug_image, has_valid_segment
 
     def process_frame_with_visualization(self, image, debug_image, point_coords):
         if point_coords is not None:

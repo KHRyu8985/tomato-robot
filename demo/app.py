@@ -8,6 +8,8 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 from src.hand_gesture.hand_tracker import HandTracker
 from src.sam2_model.sam2_tracker import SAM2Tracker
+import math
+from itertools import cycle
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -18,12 +20,30 @@ sam2_tracker = SAM2Tracker()
 # Webcam thread running and Feature Visualization
 thread_running = False
 SHOW_FEATURE = False
+SHOW_STREAM = False
+
+# Loading animation
+def create_loading_animation(frame_idx, width=640, height=480):
+    image = np.ones((height, width, 3), dtype=np.uint8) * 255
+    
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    cv2.putText(image, "Loading...", (width//2 - 150, height//2 - 50), 
+               font, 0.8, (200, 200, 200), 2)
+    
+    return image
+
+loading_frame_idx = 0
 
 def process_video():
-    global thread_running, SHOW_FEATURE
+    global thread_running, SHOW_FEATURE, SHOW_STREAM, loading_frame_idx
     cap = cv2.VideoCapture(0)
     thread_running = True
-
+    
+    last_valid_segment_time = time.time()
+    no_segment_timeout = 5.0  # 5 seconds timeout
+    has_valid_segment_before = False
+    stream_paused = False 
+    
     while thread_running:
         ret, frame = cap.read()
         if not ret:
@@ -31,24 +51,63 @@ def process_video():
             break
 
         debug_image = frame.copy()
-        # Preprocessing with hand_tracker (update points, etc.)
         debug_image, point_coords = hand_tracker.process_frame(frame, debug_image, None, None)
+        
+        if point_coords is not None:
+            if stream_paused:
+                print("Hand detected, resuming stream")
+                stream_paused = False
+                socketio.emit('segment_status', {'detected': True, 'resumed': True})
+                
+            SHOW_STREAM = True
+            last_valid_segment_time = time.time()
+            has_valid_segment_before = False    
 
-        if SHOW_FEATURE:
-            debug_image, pca_visualization = sam2_tracker.process_frame_with_visualization(frame, debug_image, point_coords)
-            if pca_visualization is not None:
-                _, buffer_feat = cv2.imencode('.jpg', pca_visualization)
-                feature_base64 = base64.b64encode(buffer_feat).decode('utf-8')
-                socketio.emit('feature_frame', {'image': feature_base64})
-        else:
-            debug_image = sam2_tracker.process_frame(frame, debug_image, point_coords)
+        if SHOW_STREAM and not stream_paused:
+            has_valid_segment = False
+            
+            if SHOW_FEATURE:
+                debug_image, pca_visualization = sam2_tracker.process_frame_with_visualization(frame, debug_image, point_coords)
+                has_valid_segment = pca_visualization is not None
+                
+                if pca_visualization is not None:
+                    _, buffer_feat = cv2.imencode('.jpg', pca_visualization)
+                    feature_base64 = base64.b64encode(buffer_feat).decode('utf-8')
+                    socketio.emit('feature_frame', {'image': feature_base64})
+            else:
+                debug_image, has_valid_segment = sam2_tracker.process_frame(frame, debug_image, point_coords)
+            
+            current_time = time.time()
+            
+            if has_valid_segment:
+                last_valid_segment_time = current_time
+                has_valid_segment_before = True
+            
+            no_segment_duration = current_time - last_valid_segment_time
+            
+            if no_segment_duration >= no_segment_timeout and has_valid_segment_before:
+                print(f"No valid segment detected for {no_segment_duration:.1f} seconds. Pausing stream.")
+                socketio.emit('segment_status', {'detected': False, 'timeout': True})
+                stream_paused = True
+                loading_frame_idx = 0
+                continue
 
-        # Encode main debug video to base64 and send to client
-        _, buffer = cv2.imencode('.jpg', debug_image)
-        frame_base64 = base64.b64encode(buffer).decode('utf-8')
-        socketio.emit('video_frame', {'image': frame_base64})
-        time.sleep(0.03)  # Approx. 30 FPS
+            _, buffer = cv2.imencode('.jpg', debug_image)
+            frame_base64 = base64.b64encode(buffer).decode('utf-8')
+            socketio.emit('video_frame', {'image': frame_base64})
+        
+        # elif stream_paused:
+        #     if time.time() % 0.1 < 0.03:
+        #         loading_image = create_loading_animation(loading_frame_idx)
+        #         loading_frame_idx += 1
+                
+        #         _, buffer = cv2.imencode('.jpg', loading_image)
+        #         frame_base64 = base64.b64encode(buffer).decode('utf-8')
+        #         socketio.emit('video_frame', {'image': frame_base64})
+        
+        time.sleep(0.03)
 
+    socketio.emit('stream_stopped', {})
     cap.release()
 
 @app.route('/')
