@@ -37,6 +37,9 @@ tensorflow = "*"
 tf-nightly = "*"
 flask = "*"
 flask-socketio = "*"
+pyopengl = "*"
+pyopengl-accelerate = "*"
+pyzed = "*"
 
 [dev-packages]
 
