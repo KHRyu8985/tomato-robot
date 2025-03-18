@@ -5,6 +5,11 @@ import cv2
 from typing import Tuple, Optional
 from gradio_webrtc import WebRTC
 from PIL import Image
+import numpy as np
+import os
+import time
+from threading import Thread, Lock
+import queue
 from src.florence2_model import (
     setup_florence_model,
     run_open_vocabulary_detection,
@@ -15,12 +20,30 @@ from src.florence2_model.modes import (
     IMAGE_OPEN_VOCABULARY_DETECTION_MODE,
     IMAGE_CAPTION_GROUNDING_MODE,
 )
-import numpy as np
-import os
+from src.sam2_model import (
+    setup_sam2_model,
+    process_new_prompt,
+    process_new_box,
+    track_object,
+)
 
+# TODO: 현재 OD 태스크에만 사용 가능
 
-latest_frame = None
-auto_capture_running = False
+SAM2_CHECKPOINT = "checkpoints/sam2.1_hiera_tiny.pt"
+MODEL_CFG = "configs/sam2.1/sam2.1_hiera_t.yaml"
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+bbox = []
+point_coords = []
+point_labels = []
+initialized = False  # Keeps track of whether the model has been initialized
+
+latest_frame = None  # Most recent frame received
+processed_frame = None  # Most recent frame processed by the model
+processing_thread = None
+frame_lock = Lock()  # Ensures only one thread modifies processed_frame at a time
+frame_queue = queue.Queue(maxsize=1)  # Only keep the latest frame
+last_time = time.time()  # Last processed frame time
 
 # Define the directory containing the images
 image_dir = "data/pictures"
@@ -37,7 +60,37 @@ image_files = image_files[:10]  # 10개만 사용
 # For a single image input, each example is a one-element list
 example_list = [[img] for img in image_files]
 
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+# 🏃 Background processing thread function (일부 프레임을 동적으로 스킵하고 처리)
+def process_frame_in_thread():
+    global latest_frame, processed_frame, frame_lock, point_coords, point_labels, initialized
+
+    while True:
+        start_time = time.time()
+        frame = frame_queue.get()  # Get the latest frame from queue
+        if frame is None:
+            break  # Stop processing if None (exit signal)
+
+        with (
+            frame_lock
+        ):  # Prevents multiple threads from modifying  processed_frame at the same time
+            if not initialized and len(point_coords) > 0:
+                # processed_frame = process_new_prompt(frame, point_coords, point_labels)/
+                processed_frame = process_new_box(frame, bbox)
+                initialized = True
+            elif initialized:
+                processed_frame = track_object(frame)
+        frame_queue.task_done()  # Mark frame as processed, allowing the queue to remove it and move on to the next frame
+
+        end_time = time.time()
+        print(f"Time taken: {end_time - start_time:.4f} seconds")  # Log time
+
+
+# Start the processing thread
+processing_thread = Thread(
+    target=process_frame_in_thread, daemon=True
+)  # daemon=True flag makes sure the thread automatically stops when the main program exits.
+processing_thread.start()
 
 
 def clear_image_processing_components():
@@ -67,7 +120,13 @@ def update_live_frame(frame):
     global latest_frame
     latest_frame = frame
 
-    return frame
+    if not frame_queue.full():
+        frame_queue.put(frame)  # Add frame to queue
+
+    return processed_frame if processed_frame is not None else frame
+
+
+# 첫 프레임만 그대로 반환. 이후에는 queue에 저장된 프레임이 순차적으로 처리되기 때문에 processed_frame이 늘 존재함.
 
 
 @torch.inference_mode()
@@ -100,14 +159,16 @@ def process_image(
 
 @torch.inference_mode()
 @torch.autocast(device_type=DEVICE, dtype=torch.bfloat16)
-def process_live_frame(text_input, mode=IMAGE_OPEN_VOCABULARY_DETECTION_MODE):
+def submit_prompt(text_input, mode=IMAGE_OPEN_VOCABULARY_DETECTION_MODE):
     """
     This function is used to process the video frame.
     It takes a frame as input and returns a processed frame.
     """
-    global latest_frame
+    global latest_frame, bbox, point_coords, point_labels, initialized
     if latest_frame is None:
-        return None, None, None
+        return None
+
+    initialized = False
 
     # Convert frame to PIL Image
     if isinstance(latest_frame, np.ndarray):
@@ -123,27 +184,23 @@ def process_live_frame(text_input, mode=IMAGE_OPEN_VOCABULARY_DETECTION_MODE):
     processed_frame, text_output, bbox_coordinates = process_image(
         pil_image, mode, text_input
     )
+    if bbox_coordinates and len(bbox_coordinates) > 0:
+
+        bbox = bbox_coordinates  # 일단 사용 x
+        x1, y1, x2, y2 = bbox_coordinates[0]
+        point_coords = [[int((x1 + x2) / 2), int((y1 + y2) / 2)]]
+        point_labels = [1]
+        print(f"Starting SAM2 tracking at: {point_coords}")
+        # 🚀 Start tracking immediately after detection!
+        # processed_frame = process_new_prompt(latest_frame, point_coords, point_labels)
+        # initialized = True
 
     return processed_frame, text_output, bbox_coordinates
 
 
-def toggle_auto_capture():
-    global auto_capture_running
-    if auto_capture_running:
-        auto_capture_running = False
-        return gr.Button("Start Auto Capture", variant="primary"), gr.Timer(
-            active=False
-        )
-    else:
-        auto_capture_running = True
-        return gr.Button("Stop Auto Capture", variant="secondary"), gr.Timer(
-            active=True
-        )
-
-
 css = """"""
 # TODO: WebRTC 화질 조정하기
-with gr.Blocks(css=css, theme='shivi/calm_seafoam') as demo:
+with gr.Blocks(css=css) as demo:
     # 이미지 탭
     with gr.Tab("Image"):
 
@@ -257,10 +314,6 @@ with gr.Blocks(css=css, theme='shivi/calm_seafoam') as demo:
                 video_processing_capture_button_component = gr.Button(
                     "Submit", variant="primary"
                 )
-                auto_capture_button_component = gr.Button(
-                    "Start Auto Capture", variant="primary"
-                )
-        timer = gr.Timer(3, active=False)
 
     # TODO: process_stream() 구현
     # examples.select(fn=load_example_image, inputs=[examples], outputs=[image_processing_image_input_component])
@@ -274,7 +327,7 @@ with gr.Blocks(css=css, theme='shivi/calm_seafoam') as demo:
             video_processing_capture_button_component.click,
             video_processing_text_input_component.submit,
         ],
-        fn=process_live_frame,
+        fn=submit_prompt,
         inputs=[
             video_processing_text_input_component,
             video_processing_mode_dropdown_component,
@@ -295,23 +348,7 @@ with gr.Blocks(css=css, theme='shivi/calm_seafoam') as demo:
         ],
     )
 
-    timer.tick(
-        fn=process_live_frame,
-        inputs=[
-            video_processing_text_input_component,
-            video_processing_mode_dropdown_component,
-        ],
-        outputs=[
-            video_processing_captured_image_output_component,
-            video_processing_text_output_component,
-            video_processing_boundingbox_coordinates_output_component,
-        ],
-    )
-
-    auto_capture_button_component.click(
-        fn=toggle_auto_capture, outputs=[auto_capture_button_component, timer]
-    )
-
 if __name__ == "__main__":
     setup_florence_model(DEVICE)  # 모델 초기화
+    setup_sam2_model(SAM2_CHECKPOINT, MODEL_CFG, DEVICE)
     demo.launch(share=True)

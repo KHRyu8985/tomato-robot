@@ -6,6 +6,8 @@ from .florence import (
     run_florence_inference,
     FLORENCE_OPEN_VOCABULARY_DETECTION_TASK,
     FLORENCE_DETAILED_CAPTION_TASK,
+    FLORENCE_CAPTION_TASK,
+    FLORENCE_MORE_DETAILED_CAPTION_TASK,
     FLORENCE_CAPTION_TO_PHRASE_GROUNDING_TASK,
 )
 from typing import Tuple, Dict, Optional, Union, Any
@@ -14,7 +16,15 @@ FLORENCE_MODEL, FLORENCE_PROCESSOR = None, None
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 
-COLORS = ["#FF1493", "#00BFFF", "#FF6347", "#FFD700", "#32CD32", "#8A2BE2"]
+# COLORS = ["#FF1493", "#00BFFF", "#FF6347", "#FFD700", "#32CD32", "#8A2BE2"]
+COLORS = [
+    "#FFB6C1",  # Light Pink
+    "#B0E0E6",  # Powder Blue
+    "#FFDAB9",  # Peach Puff
+    "#FFFFE0",  # Light Yellow
+    "#98FB98",  # Pale Green
+    "#E6E6FA",  # Lavender
+]
 COLOR_PALETTE = sv.ColorPalette.from_hex(
     COLORS
 )  # If no argument is provided, it uses the default palette. (sv.ColorPalette())
@@ -125,7 +135,7 @@ def run_open_vocabulary_detection(image_input, text_input):
 
 
 def run_caption_phrase_grounding(image_input, text_input):
-    task = FLORENCE_DETAILED_CAPTION_TASK
+    task = FLORENCE_MORE_DETAILED_CAPTION_TASK
     _, result = run_florence_inference(
         FLORENCE_MODEL,
         FLORENCE_PROCESSOR,
@@ -135,7 +145,7 @@ def run_caption_phrase_grounding(image_input, text_input):
     )
     # TODO:text input을 phrase grounding에 반영할 수 있는지 확인
 
-    caption = result[FLORENCE_DETAILED_CAPTION_TASK]
+    caption = result[task]
 
     task = FLORENCE_CAPTION_TO_PHRASE_GROUNDING_TASK
     _, result = run_florence_inference(
