@@ -10,6 +10,7 @@ from src.hand_gesture.hand_tracker import HandTracker
 from src.sam2_model.sam2_tracker import SAM2Tracker
 import math
 from itertools import cycle
+import click
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -21,6 +22,9 @@ sam2_tracker = SAM2Tracker()
 thread_running = False
 SHOW_FEATURE = False
 SHOW_STREAM = False
+
+# Camera type
+CAMERA_TYPE = 'zed'
 
 # Loading animation
 def create_loading_animation(frame_idx, width=640, height=480):
@@ -49,6 +53,10 @@ def process_video():
         if not ret:
             print("[Error] Failed to read frame")
             break
+
+        if CAMERA_TYPE == 'zed':
+            f_height, f_width = frame.shape[:2]
+            frame = frame[:,f_width//2:]
 
         debug_image = frame.copy()
         debug_image, point_coords = hand_tracker.process_frame(frame, debug_image, None, None)
@@ -132,5 +140,14 @@ def set_feature(data):
     SHOW_FEATURE = data.get('show_feature', False)
     print("SHOW_FEATURE set to", SHOW_FEATURE)
 
-if __name__ == '__main__':
+@click.command()
+@click.option('--camera', default='zed', help='Camera type (zed, femto)')
+def main(camera):
+
+    global CAMERA_TYPE
+    CAMERA_TYPE = camera
+
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+
+if __name__ == '__main__':
+    main()

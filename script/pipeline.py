@@ -7,10 +7,11 @@ from src.hand_gesture.hand_tracker import HandTracker
 from src.sam2_model.sam2_tracker import SAM2Tracker
 
 @click.command()
-@click.option('--device', type=int, default=0, help='Camera device index')
+@click.option('--camera', type=str, default='zed', help='Camera type (zed, femto)')
 @click.option('--show-feature', is_flag=True, default=False, help='If set, visualize mask decoder feature extraction results.')
-def pipeline(device=0, show_feature=False):
-    cap = cv.VideoCapture(device)
+def pipeline(camera='zed', show_feature=False):
+    cap = cv.VideoCapture(0)
+
     hand_tracker = HandTracker()
     sam2_tracker = SAM2Tracker()
     
@@ -19,6 +20,11 @@ def pipeline(device=0, show_feature=False):
         if not ret:
             print("[Error] Failed to read frame")
             break
+
+        if camera == 'zed':
+            f_height, f_width = image.shape[:2]
+            image = image[:,f_width//2:]
+
         debug_image = image.copy()
 
         debug_image, point_coords = hand_tracker.process_frame(image, debug_image, None, None)
