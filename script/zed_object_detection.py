@@ -102,7 +102,7 @@ def main():
 
     # Configure object detection runtime parameters
     obj_runtime_param = sl.ObjectDetectionRuntimeParameters()
-    obj_runtime_param.detection_confidence_threshold = 30
+    obj_runtime_param.detection_confidence_threshold = 10
     obj_runtime_param.object_class_filter = [sl.OBJECT_CLASS.FRUIT_VEGETABLE]    
 
     # Create ZED objects filled in the main loop

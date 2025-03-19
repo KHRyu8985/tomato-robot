@@ -43,7 +43,7 @@ The project is organized as follows:
    ./download_ckpts.sh
    ```
 
-### Zed Camera Settings
+### Zed Camera Settings (Window)
 1. Download ZED SDK from https://www.stereolabs.com/developers/release/ 
 2. Download ZED SDK Python API
    ```
