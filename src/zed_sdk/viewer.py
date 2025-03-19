@@ -9,6 +9,7 @@ import array
 import math
 import ctypes
 import pyzed.sl as sl
+import cv2 as cv
 
 
 VERTEX_SHADER = """
@@ -486,19 +487,21 @@ class GLViewer:
         self.available = False
         self.objects_name = []
         self.mutex = Lock()
+
         # Show tracked objects only
         self.is_tracking_on = False
+        self.image_size = None 
 
     def init(self, _params, _is_tracking_on):
         glutInit()
         wnd_w = glutGet(GLUT_SCREEN_WIDTH)
         wnd_h = glutGet(GLUT_SCREEN_HEIGHT)
-        width = (int)(wnd_w*0.9)
-        height = (int)(wnd_h*0.9)
+        width = 1280
+        height = 720
 
         glutInitWindowSize(width, height)
         glutInitWindowPosition((int)(wnd_w*0.05),(int)(wnd_h*0.05))
-        glutInitDisplayMode(GLUT_DOUBLE | GLUT_SRGB)
+        glutInitDisplayMode(GLUT_DOUBLE | GLUT_SRGB | GLUT_RGBA | GLUT_DEPTH)
         glutCreateWindow("ZED Object detection")
         glViewport(0, 0, width, height)
 
@@ -514,6 +517,7 @@ class GLViewer:
         # Initialize image renderer
         self.image_handler = ImageHandler()
         self.image_handler.initialize(_params.image_size)
+        self.image_size = _params.image_size
 
         glEnable(GL_FRAMEBUFFER_SRGB)
 
@@ -615,6 +619,19 @@ class GLViewer:
                     self.create_bbox_rendering(bounding_box, color_id)
 
         self.mutex.release()
+
+    def get_current_frame(self):
+        if not self.available or self.image_size is None:
+            return None
+
+        w = self.image_size.width
+        h = self.image_size.height
+
+        pixels = glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE)
+        image = np.frombuffer(pixels, dtype=np.uint8).reshape(h, w, 4)
+        image = np.flipud(image)
+        image_bgr = cv.cvtColor(image, cv.COLOR_RGBA2BGR)
+        return image_bgr
 
     def create_bbox_rendering(self, _bbox, _bbox_clr):
         # First create top and bottom full edges

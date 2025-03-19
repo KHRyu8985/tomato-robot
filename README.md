@@ -39,6 +39,8 @@ The project is organized as follows:
 ### Download Checkpoint
 1. Download SAM2 model checkpoint:
    ```
+   # git bash
+   
    cd checkpoints
    ./download_ckpts.sh
    ```

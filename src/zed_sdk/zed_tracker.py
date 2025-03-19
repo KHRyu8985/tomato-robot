@@ -12,12 +12,13 @@ class ZedTracker:
         self.runtime_parameters = sl.RuntimeParameters()
         self.obj_runtime_param = sl.ObjectDetectionRuntimeParameters()
 
-    def initialize_zed(self):
+    def initialize_zed(self, resolution=sl.RESOLUTION.HD720, display_viewer=True):
         # initialize zed camera
         self.zed = sl.Camera()
         init_params = sl.InitParameters()
         init_params.coordinate_units = sl.UNIT.METER
         init_params.coordinate_system = sl.COORDINATE_SYSTEM.RIGHT_HANDED_Y_UP
+        init_params.camera_resolution = resolution
 
         err = self.zed.open(init_params)
         if err != sl.ERROR_CODE.SUCCESS:
@@ -58,6 +59,11 @@ class ZedTracker:
     def update_viewer(self):
         if self.viewer is not None and self.viewer.is_available(): # update viewer if viewer is not None and is available
             self.viewer.update_view(self.zed_image, self.objects)
+
+    def get_viewer_frame(self):
+        if self.viewer is not None and self.viewer.is_available():
+            return self.viewer.get_current_frame()
+        return None
 
     def close_zed(self):
         if self.zed is not None:

@@ -25,6 +25,11 @@
         .switch-container {
             display: flex;
             align-items: center;
+            gap: 20px;
+        }
+        .switch-group {
+            display: flex;
+            align-items: center;
         }
         .switch-label {
             color: #0004FF;
@@ -133,15 +138,18 @@
         #title { display: flex; justify-content: center; align-items: center; width: 100%; height: 50px; margin-bottom: 20px; }
         #title p { color: #0004FF; font-size: 32px; font-weight: bold; margin-bottom: 20px; }
 
+        #stream-container { display: flex; justify-content: center; align-items: center; width: 80%;  gap: 20px;}
+
         #waiting-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
         #waiting-screen h1 { color: #0004FF; font-size: 28px; font-weight: bold; margin-bottom: 20px; }
         #waiting-screen p { color: #aaaaaa; font-size: 20px; margin-bottom: 20px; }
 
         #stream-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;}
+        #viewer-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;}
 
         #feature-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;}
 
-        #video_feed, #feature_feed { height: 40%; border-radius: 15px; margin: 20px auto; display: block; }
+        #video_feed, #feature_feed, #viewer_feed { height: 40%; border-radius: 15px; margin: 20px auto; display: block; }
 
         button { display: flex; justify-content: center; align-items: center; padding: 15px 30px; border: none; border-radius: 30px;
             background-color: rgba(0, 4, 255, 0.1); color: #0004FF; font-size: 28px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); }
@@ -159,11 +167,20 @@
     <div id="head-container">
         <p style="color: #0004FF; font-size: 32px; font-weight: bold;">Tomato Robot 🤖</p>
         <div class="switch-container">
-            <span class="switch-label">Feature Visualization</span>
-            <label class="switch">
-                <input type="checkbox" id="feature-toggle" onclick="toggleFeature()">
+            <div class="switch-group">
+                <span class="switch-label">Feature Visualization</span>
+                <label class="switch">
+                    <input type="checkbox" id="feature-toggle" onclick="toggleFeature()">
                 <span class="slider"></span>
-            </label>
+                </label>
+            </div>
+            <div class="switch-group">
+                <span class="switch-label">Tomato Detection</span>
+                <label class="switch">
+                    <input type="checkbox" id="viewer-toggle" onclick="toggleViewer()">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
     </div>
     
@@ -176,10 +193,15 @@
             <p>waiting for hand...</p>
         </div>
 
-        <div id="stream-screen" style="display:none;">
-            <img id="video_feed" src="" alt="Video Feed">
+        <div id="stream-container">
+            <div id="stream-screen" style="display:none;">
+                <img id="video_feed" src="" alt="Video Feed">
+            </div>
+            <div id="viewer-screen" style="display:none;">
+                <img id="viewer_feed" src="" alt="Viewer Feed">
+            </div>
         </div>
-        
+
         <div id="feature-screen" style="display:none;">
             <img id="feature_feed" src="" alt="Feature Visualization"">
         </div>
@@ -193,11 +215,15 @@
         var streaming = false;
         var firstFrameReceived = false;
         var lastFeatureState = false;
+        var showViewer = false;
+        var lastViewerState = false;
         
         document.addEventListener('DOMContentLoaded', function() {
             startStream();
             document.getElementById('feature-screen').style.display = "none";
             document.getElementById('feature-toggle').checked = false;
+            document.getElementById('viewer-screen').style.display = "none";
+            document.getElementById('viewer-toggle').checked = false;
         });
 
         function setFeatureState(enabled) {
@@ -207,11 +233,21 @@
             socket.emit('set_feature', { show_feature: enabled });
         }
 
+        function setViewerState(enabled) {
+            showViewer = enabled;
+            document.getElementById('viewer_feed').style.display = enabled ? "block" : "none";
+            document.getElementById('viewer-screen').style.display = enabled ? "block" : "none";
+            document.getElementById('viewer-toggle').checked = enabled;
+        }
+
         function toggleUI(showStream) {
             document.getElementById('waiting-screen').style.display = showStream ? 'none' : 'flex';
             document.getElementById('stream-screen').style.display = showStream ? 'block' : 'none';
             if (showFeature) {
                 document.getElementById('feature-screen').style.display = showStream ? 'block' : 'none';
+            }
+            if (showViewer) {
+                document.getElementById('viewer-screen').style.display = showStream ? 'block' : 'none';
             }
             
             if (!showStream) {
@@ -219,9 +255,15 @@
                 if (!lastFeatureState) {
                     setFeatureState(false);
                 }
-            } 
+                if (!lastViewerState) {
+                    setViewerState(false);
+                }
+            }
             else if (lastFeatureState) {
                 setFeatureState(true);
+            }
+            else if (lastViewerState) {
+                setViewerState(true);
             }
 
             if (showStream) {
@@ -237,6 +279,12 @@
             lastFeatureState = isChecked;
         }
 
+        function toggleViewer() {
+            const isChecked = document.getElementById('viewer-toggle').checked;
+            setViewerState(isChecked);
+            lastViewerState = isChecked;
+        }
+
         socket.on('video_frame', function(data) {
             if (streaming) {
                 document.getElementById('video_feed').src = 'data:image/jpeg;base64,' + data.image;
@@ -244,6 +292,9 @@
                 if (!firstFrameReceived) {
                     firstFrameReceived = true;
                     toggleUI(true);
+                    if (lastViewerState) {
+                        setViewerState(true);
+                    }
                     
                     const loadingIndicator = document.getElementById('loading-indicator');
                     if (loadingIndicator) {
@@ -263,21 +314,39 @@
             }
         });
 
+        socket.on('viewer_video_frame', function(data) {
+            if (showViewer && streaming) {
+                document.getElementById('viewer_feed').src = 'data:image/jpeg;base64,' + data.image;
+                document.getElementById('viewer-screen').style.display = "block";
+            } else {
+                document.getElementById('viewer-screen').style.display = "none";
+            }
+        });
+
         socket.on('segment_status', function(data) {
             if (data.detected) {
                 if (data.resumed) {
                     console.log("Stream resumed");
                     toggleUI(true);
+                    if (lastViewerState) {
+                        setViewerState(true);
+                    }
                 }
             } else if (data.timeout) {
                 console.log("Object not detected for 5 seconds, stream paused");
                 toggleUI(false);
+                if (!lastViewerState) {
+                    setViewerState(false);
+                }
             }
         });
 
-        socket.on('stream_paused', function() {
+        socket.on('stream_paused', function(data) {
             console.log("Stream paused");
             toggleUI(false);
+            if (!lastViewerState) {
+                setViewerState(false);
+            }
         });
 
         function startStream() {

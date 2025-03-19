@@ -6,11 +6,11 @@ import threading
 import time
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
+import click
+
 from src.hand_gesture.hand_tracker import HandTracker
 from src.sam2_model.sam2_tracker import SAM2Tracker
-import math
-from itertools import cycle
-import click
+from src.zed_sdk.zed_tracker import ZedTracker
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -40,7 +40,15 @@ loading_frame_idx = 0
 
 def process_video():
     global thread_running, SHOW_FEATURE, SHOW_STREAM, loading_frame_idx
-    cap = cv2.VideoCapture(0)
+
+    if CAMERA_TYPE == 'zed':
+        zed_tracker = ZedTracker()
+        if not zed_tracker.initialize_zed():
+            return
+    else:
+        cap = cv2.VideoCapture(0)
+        zed_tracker = None
+
     thread_running = True
     
     last_valid_segment_time = time.time()
@@ -49,14 +57,18 @@ def process_video():
     stream_paused = False 
     
     while thread_running:
-        ret, frame = cap.read()
-        if not ret:
-            print("[Error] Failed to read frame")
-            break
-
         if CAMERA_TYPE == 'zed':
-            f_height, f_width = frame.shape[:2]
-            frame = frame[:,f_width//2:]
+            success, frame, objects = zed_tracker.grab_frame_and_objects()
+            if not success:
+                continue
+
+            zed_tracker.update_viewer()
+            viewer_frame = zed_tracker.get_viewer_frame()
+        else:
+            ret, frame = cap.read()
+            if not ret:
+                print("[Error] failed to read frame")
+                break
 
         debug_image = frame.copy()
         debug_image, point_coords = hand_tracker.process_frame(frame, debug_image, None, None)
@@ -103,6 +115,11 @@ def process_video():
             _, buffer = cv2.imencode('.jpg', debug_image)
             frame_base64 = base64.b64encode(buffer).decode('utf-8')
             socketio.emit('video_frame', {'image': frame_base64})
+
+            if viewer_frame is not None:
+                _, buffer_viewer = cv2.imencode('.jpg', viewer_frame)
+                viewer_frame_base64 = base64.b64encode(buffer_viewer).decode('utf-8')
+                socketio.emit('viewer_video_frame', {'image': viewer_frame_base64})
         
         # elif stream_paused:
         #     if time.time() % 0.1 < 0.03:

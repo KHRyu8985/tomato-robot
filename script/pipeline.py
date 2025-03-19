@@ -14,7 +14,7 @@ from src.zed_sdk.zed_tracker import ZedTracker
 def pipeline(camera='zed', show_feature=False):
     if camera == 'zed':
         zed_tracker = ZedTracker()
-        if not zed_tracker.initialize_zed():
+        if not zed_tracker.initialize_zed(resolution=sl.RESOLUTION.HD2K):
             return
     else:
         cap = cv.VideoCapture(0)
@@ -30,16 +30,17 @@ def pipeline(camera='zed', show_feature=False):
                 continue
 
             zed_tracker.update_viewer()
+            viewer_frame = zed_tracker.get_viewer_frame()
 
-            debug_image = frame.copy()
+            # if viewer_frame is not None:
+            #     cv.imshow('ZED Viewer Frame', viewer_frame)
         else:
             ret, frame = cap.read()
             if not ret:
                 print("[Error] failed to read frame")
                 break
-
+            
         debug_image = frame.copy()
-
         debug_image, point_coords = hand_tracker.process_frame(frame, debug_image, None, None)
         
         if show_feature:
