@@ -2,7 +2,7 @@ import cv2
 from ultralytics import YOLO
 
 class YOLOv8TomatoTracker:
-    def __init__(self, model_path='./checkpoints/tomato_detection.pt'):
+    def __init__(self, model_path='./checkpoints/yolo_v8_tomato.pt'):
         self.model = self.load_yolov8_model(model_path)
         if self.model is None:
             raise Exception("Failed to initialize YOLOv8 model")

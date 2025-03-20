@@ -82,6 +82,7 @@ class SAM2Tracker:
         out_mask_logits = None
         pca_visualization = None
         binary_mask = None
+        has_valid_segment = False
 
         with torch.inference_mode(), torch.autocast("cuda", dtype=torch.bfloat16):
             if self.prompt["point_coords"] is not None:
@@ -122,9 +123,18 @@ class SAM2Tracker:
                     _, out_mask_logits = self.predictor.track(image)
 
         if out_mask_logits is not None:
+            if abs(out_mask_logits.min().item() + 1024) < 1.0 and abs(out_mask_logits.max().item() + 1024) < 1.0:
+                has_valid_segment = False
+            else:
+                threshold = -15  # threshold for valid segment
+                positive_pixel_count = (out_mask_logits > threshold).sum().item()
+                
+                if positive_pixel_count > 100:  # minimum pixel count threshold
+                    has_valid_segment = True
+            
             debug_image, binary_mask = show_mask_overlay(debug_image, out_mask_logits, self.prompt)
 
         if pca_visualization is not None:
-            return debug_image, pca_visualization, binary_mask
+            return debug_image, pca_visualization, has_valid_segment, binary_mask
         else:
-            return debug_image, None, binary_mask
+            return debug_image, None, has_valid_segment, binary_mask

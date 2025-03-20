@@ -3,7 +3,6 @@ import click
 import cv2 as cv
 import numpy as np
 import pyzed.sl as sl
-import time
 
 from src.yolo_model.yolov8_tomato_tracker import YOLOv8TomatoTracker
 from src.hand_gesture.hand_tracker import HandTracker
@@ -46,8 +45,11 @@ def pipeline(camera='zed', show_feature=False):
     sam2_mask_image = None
     tomato_detection = None
     if tomato_boxes_buffer:
+        print(f"[INFO] detected {len(tomato_boxes_buffer)} tomatoes using yolo")
         tomato_detection, sam2_mask_image = sam2_tomato_tracker.get_tomato_mask(initial_frame, tomato_boxes_buffer)
-    
+    else:
+        print("[INFO] No tomatoes detected")
+
     while True:
         if camera == 'zed':
             success, frame, objects = zed_tracker.grab_frame_and_objects()
@@ -63,7 +65,7 @@ def pipeline(camera='zed', show_feature=False):
                 break
         
         debug_image = frame.copy()
-
+        
         if sam2_mask_image is not None:
             cv.imshow("SAM2, YOLO Tomato Detection", sam2_mask_image)
 
@@ -100,8 +102,17 @@ def pipeline(camera='zed', show_feature=False):
                     
             cv.imshow('hand gesture recognition', debug_image)
 
-        if cv.waitKey(10) & 0xFF == 27:
+        key = cv.waitKey(10) & 0xFF
+        if key == 27:  # ESC key terminates the program
             break
+        elif key == 32: # space bar re-detects tomatoes using yolo
+            print("[INFO] Re-detecting tomatoes using yolo...")
+            detected_frame_yolo, tomato_boxes_buffer, yolo_results = yolo_tracker.detect_tomatoes(frame)
+            if tomato_boxes_buffer:
+                tomato_detection, sam2_mask_image = sam2_tomato_tracker.get_tomato_mask(frame, tomato_boxes_buffer)
+                print(f"[INFO] detected {len(tomato_detection)} tomatoes")
+            else:
+                print("[INFO] No tomatoes detected")
 
     if camera == 'zed':
         zed_tracker.close_zed()

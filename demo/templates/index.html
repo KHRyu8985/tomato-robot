@@ -153,10 +153,95 @@
 
         button { display: flex; justify-content: center; align-items: center; padding: 15px 30px; border: none; border-radius: 30px;
             background-color: rgba(0, 4, 255, 0.1); color: #0004FF; font-size: 28px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); }
+            
+        #detect-tomato-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #0004FF;
+            color: white;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            transition: transform 0.3s, background-color 0.3s;
+        }
+        
+        #detect-tomato-button:hover {
+            transform: scale(1.1);
+            background-color: #0002BB;
+        }
+        
+        #tomato-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        #tomato-popup-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        #tomato-popup img {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 10px;
+        }
+        
+        #tomato-popup-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 28px;
+            color: #0004FF;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            padding: 10px;
+            transition: background-color 0.3s;
+        }
+        
+        #tomato-popup-close:hover {
+            background-color: rgba(0, 4, 255, 0.2);
+        }
+        
+        #tomato-popup h2 {
+            color: #0004FF;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
-    <!-- 배경 원 요소 추가 -->
     <div class="background-circle" id="circle1"></div>
     <div class="background-circle" id="circle2"></div>
     <div class="background-circle" id="circle3"></div>
@@ -205,8 +290,16 @@
         <div id="feature-screen" style="display:none;">
             <img id="feature_feed" src="" alt="Feature Visualization"">
         </div>
-
-        <!-- <button id="harvest-button">🍅 수확하기</button> -->
+    </div>
+    <div id="detect-tomato-button" onclick="detectTomatoes()">
+        🍅
+    </div>
+    <div id="tomato-popup">
+        <div id="tomato-popup-content">
+            <div id="tomato-popup-close" onclick="closeTomatoPopup()">✖</div>
+            <h2>🍅토마토 탐지 결과🍅</h2>
+            <img id="tomato_detection_feed" src="" alt="Tomato Detection">
+        </div>
     </div>
     
     <script>
@@ -217,6 +310,12 @@
         var lastFeatureState = false;
         var showViewer = false;
         var lastViewerState = false;
+        var currentMatchedTomatoId = null;
+        var countdownInterval = null;
+        var countdownSeconds = 3;
+        var harvestingTomato = false;
+        var lastMatchedTomatoTime = 0;
+        var sameIdDuration = 0;
         
         document.addEventListener('DOMContentLoaded', function() {
             startStream();
@@ -258,6 +357,12 @@
                 if (!lastViewerState) {
                     setViewerState(false);
                 }
+                currentMatchedTomatoId = null;
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+                countdownSeconds = 3;
+                harvestingTomato = false;
+                sameIdDuration = 0;
             }
             else if (lastFeatureState) {
                 setFeatureState(true);
@@ -266,11 +371,7 @@
                 setViewerState(true);
             }
 
-            if (showStream) {
-                document.getElementById('title').innerHTML = '<p>수확할 <span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">토마토</span>를 손가락으로 선택해주세요👆🏻</p>';
-            } else {
-                document.getElementById('title').innerHTML = '<p>안녕하세요🙌</p>';
-            }
+            updateTitleMessage();
         }
 
         function toggleFeature() {
@@ -283,6 +384,15 @@
             const isChecked = document.getElementById('viewer-toggle').checked;
             setViewerState(isChecked);
             lastViewerState = isChecked;
+        }
+        
+        function detectTomatoes() {
+            socket.emit('detect_tomatoes');
+            console.log("토마토 감지 요청 전송");
+        }
+
+        function closeTomatoPopup() {
+            document.getElementById('tomato-popup').style.display = 'none';
         }
 
         socket.on('video_frame', function(data) {
@@ -322,6 +432,12 @@
                 document.getElementById('viewer-screen').style.display = "none";
             }
         });
+        
+        socket.on('tomato_detection_result', function(data) {
+            document.getElementById('tomato_detection_feed').src = 'data:image/jpeg;base64,' + data.image;
+            document.getElementById('tomato-popup').style.display = 'flex';
+            console.log("Received tomato detection result");
+        });
 
         socket.on('segment_status', function(data) {
             if (data.detected) {
@@ -349,6 +465,80 @@
             }
         });
 
+        socket.on('tomato_match_result', function(data) {
+            const now = Date.now();
+            
+            if (data.matched_id === null || data.matched_id !== currentMatchedTomatoId) {
+                // cancel ongoing countdown
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+                countdownSeconds = 3;
+                harvestingTomato = false;
+                sameIdDuration = 0;
+                
+                // set new tomato ID
+                currentMatchedTomatoId = data.matched_id;
+                if (currentMatchedTomatoId !== null) {
+                    lastMatchedTomatoTime = now;
+                }
+            } 
+            // same tomato is selected continuously
+            else if (data.matched_id === currentMatchedTomatoId) {
+                sameIdDuration = now - lastMatchedTomatoTime;
+                
+                // 3 seconds or more of same tomato selection and countdown not started yet
+                if (sameIdDuration >= 3000 && !countdownInterval && !harvestingTomato) {
+                    startHarvestCountdown();
+                }
+            }
+            
+            updateTitleMessage();
+        });
+
+        function startHarvestCountdown() {
+            countdownSeconds = 3;
+            harvestingTomato = false;
+            
+            countdownInterval = setInterval(function() {
+                countdownSeconds--;
+                updateTitleMessage();
+                
+                if (countdownSeconds <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                    harvestingTomato = true;
+                    updateTitleMessage();
+                }
+            }, 1000);
+        }
+
+        function updateTitleMessage() {
+            if (streaming && firstFrameReceived) {
+                if (currentMatchedTomatoId !== null) {
+                    if (harvestingTomato) {
+                        // harvesting state
+                        document.getElementById('title').innerHTML = 
+                            `<p><span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">${currentMatchedTomatoId}번 토마토</span>를 수확 중입니다... ✂️</p>`;
+                    } 
+                    else if (countdownInterval) {
+                        // countdown state
+                        document.getElementById('title').innerHTML = 
+                            `<p><span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">${countdownSeconds}초</span> 후에 <span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">${currentMatchedTomatoId}번 토마토</span>를 수확합니다 🍅</p>`;
+                    }
+                    else if (sameIdDuration < 3000) {
+                        // tomato selection initial state
+                        document.getElementById('title').innerHTML = 
+                            `<p><span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">${currentMatchedTomatoId}번 토마토</span>를 선택하였습니다 ✅</p>`;
+                    }
+                } else {
+                    document.getElementById('title').innerHTML = 
+                        '<p>수확할 <span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">토마토</span>를 손가락으로 선택해주세요👆🏻</p>';
+                }
+            } else {
+                document.getElementById('title').innerHTML = '<p>안녕하세요🙌</p>';
+            }
+        }
+
         function startStream() {
             socket.emit('start_stream');
             streaming = true;
@@ -365,7 +555,8 @@
                 alpha: true
             });
             
-            renderer.setSize(window.innerWidth * 0.2, window.innerWidth * 0.2);
+            const size = Math.max(window.innerWidth, window.innerHeight);
+            renderer.setSize(size * 0.2, size * 0.2);
             
             renderer.setClearColor(0x000000, 0);
 
@@ -479,4 +670,3 @@
     </script>
 </body>
 </html>
-

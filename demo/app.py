@@ -11,19 +11,25 @@ import click
 from src.hand_gesture.hand_tracker import HandTracker
 from src.sam2_model.sam2_tracker import SAM2Tracker
 from src.zed_sdk.zed_tracker import ZedTracker
+from src.yolo_model.yolov8_tomato_tracker import YOLOv8TomatoTracker
+from src.sam2_model.utils.mask import find_matching_tomato
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 hand_tracker = HandTracker()
 sam2_tracker = SAM2Tracker()
+yolo_tracker = YOLOv8TomatoTracker()
+sam2_tomato_tracker = SAM2Tracker(class_name="tomato")
+
+DETECT_TOMATOES = False
+sam2_mask_image = None
+tomato_detection = None
 
 # Webcam thread running and Feature Visualization
 thread_running = False
-SHOW_FEATURE = False
+SHOW_FEATURE = False                                                                                                                       
 SHOW_STREAM = False
-
-# Camera type
 CAMERA_TYPE = 'zed'
 
 # Loading animation
@@ -38,8 +44,25 @@ def create_loading_animation(frame_idx, width=640, height=480):
 
 loading_frame_idx = 0
 
+def process_tomatoes(frame):
+    global tomato_detection
+    
+    detected_frame_yolo, tomato_boxes_buffer, yolo_results = yolo_tracker.detect_tomatoes(frame)
+    local_tomato_detection = None
+    sam2_mask_image = None
+    
+    if tomato_boxes_buffer:
+        print(f"[INFO] detected {len(tomato_boxes_buffer)} tomatoes using yolo")
+        local_tomato_detection, sam2_mask_image = sam2_tomato_tracker.get_tomato_mask(frame, tomato_boxes_buffer)
+        tomato_detection = local_tomato_detection
+    else:
+        print("[INFO] No tomatoes detected")
+
+    return detected_frame_yolo, tomato_boxes_buffer, yolo_results, local_tomato_detection, sam2_mask_image
+
 def process_video():
     global thread_running, SHOW_FEATURE, SHOW_STREAM, loading_frame_idx
+    global DETECT_TOMATOES, sam2_mask_image, tomato_detection
 
     if CAMERA_TYPE == 'zed':
         zed_tracker = ZedTracker()
@@ -49,8 +72,21 @@ def process_video():
         cap = cv2.VideoCapture(0)
         zed_tracker = None
 
+    initial_frame = None
+    if CAMERA_TYPE == 'zed':
+        success, initial_frame, objects = zed_tracker.grab_frame_and_objects()
+        if not success:
+            print("[Error] failed to get initial frame from ZED camera")
+            return
+    else:
+        ret, initial_frame = cap.read()
+        if not ret:
+            print("[Error] failed to get initial frame")
+            return
+
+    _, _, _, tomato_detection, sam2_mask_image = process_tomatoes(initial_frame)
+
     thread_running = True
-    
     last_valid_segment_time = time.time()
     no_segment_timeout = 5.0  # 5 seconds timeout
     has_valid_segment_before = False
@@ -70,6 +106,18 @@ def process_video():
                 print("[Error] failed to read frame")
                 break
 
+        if DETECT_TOMATOES:
+            print("[INFO] Detecting tomatoes on current frame...")
+            _, _, _, tomato_detection, sam2_mask_image = process_tomatoes(frame)
+            
+            if sam2_mask_image is not None:
+                _, buffer = cv2.imencode('.jpg', sam2_mask_image)
+                image_base64 = base64.b64encode(buffer).decode('utf-8')
+                socketio.emit('tomato_detection_result', {'image': image_base64})
+                print("[INFO] Tomato detection result sent to client")
+
+            DETECT_TOMATOES = False
+
         debug_image = frame.copy()
         debug_image, point_coords = hand_tracker.process_frame(frame, debug_image, None, None)
         
@@ -85,17 +133,25 @@ def process_video():
 
         if SHOW_STREAM and not stream_paused:
             has_valid_segment = False
+            matched_tomato_id = None
             
             if SHOW_FEATURE:
-                debug_image, pca_visualization = sam2_tracker.process_frame_with_visualization(frame, debug_image, point_coords)
-                has_valid_segment = pca_visualization is not None
+                debug_image, pca_visualization, has_valid_segment, new_mask = sam2_tracker.process_frame_with_visualization(frame, debug_image, point_coords)
+                
+                if new_mask is not None and tomato_detection:
+                    matched_tomato_id, max_iou = find_matching_tomato(new_mask, tomato_detection, iou_threshold=0.3)
                 
                 if pca_visualization is not None:
                     _, buffer_feat = cv2.imencode('.jpg', pca_visualization)
                     feature_base64 = base64.b64encode(buffer_feat).decode('utf-8')
                     socketio.emit('feature_frame', {'image': feature_base64})
             else:
-                debug_image, has_valid_segment = sam2_tracker.process_frame(frame, debug_image, point_coords)
+                debug_image, has_valid_segment, new_mask = sam2_tracker.process_frame(frame, debug_image, point_coords)
+                
+                if has_valid_segment and new_mask is not None and tomato_detection:
+                    matched_tomato_id, max_iou = find_matching_tomato(new_mask, tomato_detection, iou_threshold=0.3)
+            
+            socketio.emit('tomato_match_result', {'matched_id': matched_tomato_id})
             
             current_time = time.time()
             
@@ -121,19 +177,13 @@ def process_video():
                 viewer_frame_base64 = base64.b64encode(buffer_viewer).decode('utf-8')
                 socketio.emit('viewer_video_frame', {'image': viewer_frame_base64})
         
-        # elif stream_paused:
-        #     if time.time() % 0.1 < 0.03:
-        #         loading_image = create_loading_animation(loading_frame_idx)
-        #         loading_frame_idx += 1
-                
-        #         _, buffer = cv2.imencode('.jpg', loading_image)
-        #         frame_base64 = base64.b64encode(buffer).decode('utf-8')
-        #         socketio.emit('video_frame', {'image': frame_base64})
-        
         time.sleep(0.03)
 
     socketio.emit('stream_stopped', {})
-    cap.release()
+    if CAMERA_TYPE != 'zed' and 'cap' in locals() and cap.isOpened():
+        cap.release()
+    if CAMERA_TYPE == 'zed' and 'zed_tracker' in locals():
+        zed_tracker.close_zed()
 
 @app.route('/')
 def index():
@@ -157,13 +207,17 @@ def set_feature(data):
     SHOW_FEATURE = data.get('show_feature', False)
     print("SHOW_FEATURE set to", SHOW_FEATURE)
 
+@socketio.on('detect_tomatoes')
+def handle_detect_tomatoes():
+    global DETECT_TOMATOES
+    
+    DETECT_TOMATOES = True
+
 @click.command()
 @click.option('--camera', default='zed', help='Camera type (zed, femto)')
 def main(camera):
-
     global CAMERA_TYPE
     CAMERA_TYPE = camera
-
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
 
 if __name__ == '__main__':
