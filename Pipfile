@@ -40,6 +40,8 @@ flask-socketio = "*"
 pyopengl = "*"
 pyopengl-accelerate = "*"
 pyzed = "*"
+onnxruntime = "*"
+ultralytics = "*"
 
 [dev-packages]
 

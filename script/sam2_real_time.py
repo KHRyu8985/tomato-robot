@@ -66,7 +66,7 @@ def sam2_real_time_inference(mode, point_coords = None, point_labels = None, bbo
             show_prompt_on_frame(frame, prompt) # draw prompt information on the original frame
 
             if out_mask_logits is not None:
-                overlay = show_mask_overlay(frame, out_mask_logits, prompt) # show mask overlay (show center information of the object)
+                overlay, _ = show_mask_overlay(frame, out_mask_logits, prompt) # show mask overlay (show center information of the object)
                 cv2.imshow("Mask Prediction", overlay)
         
     cap.release()
