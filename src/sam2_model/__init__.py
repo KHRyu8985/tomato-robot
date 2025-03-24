@@ -13,8 +13,7 @@ from hydra import initialize_config_module
 from hydra.core.global_hydra import GlobalHydra
 
 if not GlobalHydra.instance().is_initialized():
-    initialize_config_module("sam2", version_base="1.2")
-
+    initialize_config_module("src.sam2_model", version_base="1.2")
 
 SAM2_PREDICTOR = None
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"

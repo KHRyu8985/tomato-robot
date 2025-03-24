@@ -75,7 +75,7 @@ class SAM2Transforms(nn.Module):
         """
         Perform PostProcessing on output masks.
         """
-        from sam2.utils.misc import get_connected_components
+        from src.sam2_model.utils.misc import get_connected_components
 
         masks = masks.float()
         if self.max_hole_area > 0:

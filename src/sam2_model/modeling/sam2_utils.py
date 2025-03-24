@@ -11,7 +11,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 def select_closest_cond_frames(frame_idx, cond_frame_outputs, max_cond_frame_num):
     """
     Select up to `max_cond_frame_num` conditioning frames from `cond_frame_outputs`

@@ -9,9 +9,8 @@ from typing import Optional
 import torch
 from torch import nn, Tensor
 
-from sam2.modeling.sam.transformer import RoPEAttention
-
-from sam2.modeling.sam2_utils import get_activation_fn, get_clones
+from src.sam2_model.modeling.sam.transformer import RoPEAttention
+from src.sam2_model.modeling.sam2_utils import get_activation_fn, get_clones
 
 
 class MemoryAttentionLayer(nn.Module):

@@ -193,3 +193,6 @@ checkpoints/*.pt
 
 # gradio
 *.gradio
+
+# zed sdk
+sdk/*.whl

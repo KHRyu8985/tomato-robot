@@ -2,7 +2,6 @@ import autorootcwd
 import click
 import cv2 as cv
 import numpy as np
-import pyzed.sl as sl
 
 from src.yolo_model.yolov8_tomato_tracker import YOLOv8TomatoTracker
 from src.hand_gesture.hand_tracker import HandTracker
@@ -17,7 +16,7 @@ def main(camera='zed', show_feature=False):
     if camera == 'zed':
         zed_tracker = ZedTracker()
         
-        if not zed_tracker.initialize_zed(resolution=sl.RESOLUTION.HD2K):
+        if not zed_tracker.initialize_zed():
             print("[Error] failed to initialize ZED camera. Change to another camera.")
             cap = cv.VideoCapture(0)
             zed_tracker = None
@@ -78,7 +77,7 @@ def main(camera='zed', show_feature=False):
         
         if show_feature:
             # sam2 tracker with pca visualization
-            debug_image, pca_visualization, new_mask = sam2_tracker.process_frame_with_visualization(frame, debug_image, point_coords)
+            debug_image, pca_visualization, has_valid_segment, new_mask = sam2_tracker.process_frame_with_visualization(frame, debug_image, point_coords)
 
             if new_mask is not None:
                 matched_tomato_id, max_iou = find_matching_tomato(new_mask, tomato_detection, iou_threshold=0.7, debug=False, original_image=frame)

@@ -7,7 +7,6 @@ import time
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 import click
-import pyzed.sl as sl
 
 from src.hand_gesture.hand_tracker import HandTracker
 from src.sam2_model.sam2_tracker import SAM2Tracker
@@ -68,7 +67,7 @@ def process_video():
     if CAMERA_TYPE == 'zed':
         zed_tracker = ZedTracker()
             
-        if not zed_tracker.initialize_zed(resolution=sl.RESOLUTION.HD2K):
+        if not zed_tracker.initialize_zed():
             print("[Error] failed to initialize ZED camera. Change to another camera.")
             cap = cv2.VideoCapture(0)
             zed_tracker = None
