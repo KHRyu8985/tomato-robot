@@ -98,6 +98,14 @@ The project is organized as follows:
    - In Cursor:
      - Similar to VS Code, open Cursor from within the activated environment or select the Pipenv interpreter in the settings
 
+## Demo
+
+### Tomato Picker
+   Execute `app.py` in the `demo`
+   ```
+   python demo/app.py
+   ```
+
 ## Git Workflow
 
 ### Basic Commands

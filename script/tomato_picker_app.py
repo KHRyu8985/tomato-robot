@@ -16,8 +16,12 @@ from src.sam2_model.utils.mask import find_matching_tomato
 def main(camera='zed', show_feature=False):
     if camera == 'zed':
         zed_tracker = ZedTracker()
+        
         if not zed_tracker.initialize_zed(resolution=sl.RESOLUTION.HD2K):
-            return
+            print("[Error] failed to initialize ZED camera. Change to another camera.")
+            cap = cv.VideoCapture(0)
+            zed_tracker = None
+            camera = 'femto'
     else:
         cap = cv.VideoCapture(0)
         zed_tracker = None

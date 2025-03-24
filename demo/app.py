@@ -7,6 +7,7 @@ import time
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 import click
+import pyzed.sl as sl
 
 from src.hand_gesture.hand_tracker import HandTracker
 from src.sam2_model.sam2_tracker import SAM2Tracker
@@ -61,13 +62,17 @@ def process_tomatoes(frame):
     return detected_frame_yolo, tomato_boxes_buffer, yolo_results, local_tomato_detection, sam2_mask_image
 
 def process_video():
-    global thread_running, SHOW_FEATURE, SHOW_STREAM, loading_frame_idx
+    global thread_running, SHOW_FEATURE, SHOW_STREAM, CAMERA_TYPE, loading_frame_idx
     global DETECT_TOMATOES, sam2_mask_image, tomato_detection
 
     if CAMERA_TYPE == 'zed':
         zed_tracker = ZedTracker()
-        if not zed_tracker.initialize_zed():
-            return
+            
+        if not zed_tracker.initialize_zed(resolution=sl.RESOLUTION.HD2K):
+            print("[Error] failed to initialize ZED camera. Change to another camera.")
+            cap = cv2.VideoCapture(0)
+            zed_tracker = None
+            CAMERA_TYPE = 'femto'
     else:
         cap = cv2.VideoCapture(0)
         zed_tracker = None
