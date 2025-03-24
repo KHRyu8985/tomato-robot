@@ -13,7 +13,7 @@ from src.sam2_model.utils.mask import find_matching_tomato
 @click.command()
 @click.option('--camera', type=str, default='zed', help='camera type (zed, femto)')
 @click.option('--show-feature', is_flag=True, default=False, help='visualization: mask decoder feature extraction result')
-def pipeline(camera='zed', show_feature=False):
+def main(camera='zed', show_feature=False):
     if camera == 'zed':
         zed_tracker = ZedTracker()
         if not zed_tracker.initialize_zed(resolution=sl.RESOLUTION.HD2K):
@@ -121,4 +121,4 @@ def pipeline(camera='zed', show_feature=False):
     cv.destroyAllWindows()
 
 if __name__ == '__main__':
-    pipeline()
+    main()
