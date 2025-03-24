@@ -31,6 +31,37 @@ class YOLOv10:
 
         return new_image
 
+    def detect_tomatoes(self, image, conf_threshold=0.3, tomato_class_id=47):
+        input_tensor = self.prepare_input(image)
+
+        # Perform inference on the image
+        boxes, scores, class_ids = self.inference_tomato(image, input_tensor, conf_threshold)
+
+        # Filter out objects that are not tomatoes
+        filtered_indices = [i for i, class_id in enumerate(class_ids) if class_id == tomato_class_id]
+        filtered_boxes = [boxes[i] for i in filtered_indices]
+        filtered_scores = [scores[i] for i in filtered_indices]
+        filtered_class_ids = [class_ids[i] for i in filtered_indices]
+
+        # Draw bounding boxes for detected tomatoes
+        tomato_detected_image = self.draw_detections(image, filtered_boxes, filtered_scores, filtered_class_ids)
+
+        return tomato_detected_image, filtered_boxes
+
+    def inference_tomato(self, image, input_tensor, conf_threshold=0.3):
+        start = time.perf_counter()
+        # Run inference with the ONNX model
+        # outputs is a list containing one element: a numpy array of shape [1, num_predictions, 5+num_classes]
+        # where each prediction has format [x, y, width, height, confidence, class_scores...]
+        outputs = self.session.run(
+            self.output_names, {self.input_names[0]: input_tensor}
+        )
+
+        print(f"Inference time: {(time.perf_counter() - start)*1000:.2f} ms")
+        
+        boxes, scores, class_ids, = self.process_output(outputs, conf_threshold)
+        return boxes, scores, class_ids
+
     def prepare_input(self, image):
         self.img_height, self.img_width = image.shape[:2]
 

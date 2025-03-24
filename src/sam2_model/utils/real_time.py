@@ -85,4 +85,4 @@ def show_mask_overlay(frame, out_mask_logits, prompt):
         )
     
     # cv2.imshow("Predicted Mask", overlay)
-    return overlay
+    return overlay, binary_mask

@@ -190,3 +190,6 @@ checkpoints/*.pt
 
 # Keep empty directories
 !**/.gitkeep
+
+# gradio
+*.gradio
