@@ -86,7 +86,8 @@ def calculate_iou(mask1, mask2, debug=False, original_image=None):
         cv.imshow("Mask Comparison", vis_image)
         cv.waitKey(1)  # wait for 1ms (update the screen but not wait)
     
-    return intersection / union
+    return intersection / union if union > 0 else 0
+
 
 def find_matching_tomato(new_mask, tomato_detection, iou_threshold=0.8, debug=False, original_image=None):
     """

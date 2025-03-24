@@ -105,6 +105,7 @@ def process_video():
             if not ret:
                 print("[Error] failed to read frame")
                 break
+            viewer_frame = None
 
         if DETECT_TOMATOES:
             print("[INFO] Detecting tomatoes on current frame...")
