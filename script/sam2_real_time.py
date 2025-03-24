@@ -15,7 +15,8 @@ def sam2_real_time_inference(mode, point_coords = None, point_labels = None, bbo
     predictor = build_sam2_camera_predictor(model_cfg, sam2_checkpoint)
     
     # initialize camera
-    cap = cv2.VideoCapture(0)
+    # cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
     if not cap.isOpened():
         print("Error: Unable to open camera. Please check the correct camera index or connection status.")
         sys.exit(1)
