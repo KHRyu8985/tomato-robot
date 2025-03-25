@@ -5,7 +5,7 @@ import cv2
 import time
 
 def main():
-    model = YOLO('./checkpoints/tomato_detection.pt')
+    model = YOLO('./checkpoints/yolo_v8_tomato.pt')
 
     cap = cv2.VideoCapture(0)
 

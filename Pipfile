@@ -39,8 +39,10 @@ flask-socketio = "*"
 pyopengl = "*"
 pyopengl-accelerate = "*"
 pyzed = "*"
-onnxruntime = "*"
 ultralytics = "*"
+onnx = "*"
+onnxruntime = "*"
+onnxruntime-gpu = "*"
 
 [dev-packages]
 

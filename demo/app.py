@@ -144,7 +144,7 @@ def process_video():
                 debug_image, pca_visualization, has_valid_segment, new_mask = sam2_tracker.process_frame_with_visualization(frame, debug_image, point_coords)
                 
                 if new_mask is not None and tomato_detection:
-                    matched_tomato_id, max_iou = find_matching_tomato(new_mask, tomato_detection, iou_threshold=0.3)
+                    matched_tomato_id, max_iou = find_matching_tomato(new_mask, tomato_detection, iou_threshold=0.8)
                 
                 if pca_visualization is not None:
                     _, buffer_feat = cv2.imencode('.jpg', pca_visualization)
@@ -154,7 +154,7 @@ def process_video():
                 debug_image, has_valid_segment, new_mask = sam2_tracker.process_frame(frame, debug_image, point_coords)
                 
                 if has_valid_segment and new_mask is not None and tomato_detection:
-                    matched_tomato_id, max_iou = find_matching_tomato(new_mask, tomato_detection, iou_threshold=0.3)
+                    matched_tomato_id, max_iou = find_matching_tomato(new_mask, tomato_detection, iou_threshold=0.8)
             
             socketio.emit('tomato_match_result', {'matched_id': matched_tomato_id})
             
