@@ -135,7 +135,7 @@ def run_open_vocabulary_detection(image_input, text_input):
 
 
 def run_caption_phrase_grounding(image_input, text_input):
-    task = FLORENCE_MORE_DETAILED_CAPTION_TASK
+    task = FLORENCE_DETAILED_CAPTION_TASK
     _, result = run_florence_inference(
         FLORENCE_MODEL,
         FLORENCE_PROCESSOR,
