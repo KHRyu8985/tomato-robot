@@ -43,6 +43,7 @@ ultralytics = "*"
 onnx = "*"
 onnxruntime = "*"
 onnxruntime-gpu = "*"
+dynamixel-sdk = "*"
 
 [dev-packages]
 

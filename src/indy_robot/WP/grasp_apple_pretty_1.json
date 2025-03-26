@@ -1,0 +1,370 @@
+{
+    "Name": "grasp_apple",
+    "Program": [
+        {
+            "cmd": "CollisionConfig",
+            "policy": "PAUSE",
+            "duration": 0
+        },
+        {
+            "cmd": "VisionConfig"
+        },
+        {
+            "cmd": "VariableConfig",
+            "local_list": []
+        },
+        {
+            "cmd": "MoveHome",
+            "vel_ratio": 25,
+            "acc_ratio": 100,
+            "active": true
+        },
+        {   "cmd": "GripperClose"
+        },
+        {
+            "cmd": "MoveJ",
+            "name": "Set1",
+            "wait_finish": true,
+            "base_type": "ABSOLUTE",
+            "interpolator_type": "VELOCITY",
+            "vel_ratio": 25,
+            "acc_ratio": 100,
+            "coll_sens_level": 3,
+            "blending": {
+                "type": "NONE"
+            },
+            "shift": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ],
+            "shift_base": "RELATIVE",
+            "offsets": [
+                [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            ],
+            "waypoint_time": [
+                2,
+                2,
+                2,
+                2
+            ],
+            "waypoint_active": [
+                true,
+                true,
+                true,
+                true
+            ],
+            "waypoints": [
+                [
+                    -0.01,
+                    0,
+                    -90,
+                    0.01,
+                    -90,
+                    0
+                ],
+                [
+                    -0.01,
+                    0,
+                    -110,
+                    0.01,
+                    20.01,
+                    0
+                ],
+                [
+                    0.63,
+                    0,
+                    -120,
+                    0.02,
+                    30,
+                    0
+                ],
+                [
+                    14.35,
+                    9.43,
+                    -113.83,
+                    44.61,
+                    19.79,
+                    -42.77
+                ],
+                [
+                    5.99,
+                    -34.06,
+                    -140.63,
+                    -11.69,
+                    116.09,
+                    0.91
+                ]
+            ],
+            "active": true,
+            "fold": false
+        },
+        {
+            "cmd": "GripperOpen"
+        },
+        {
+            "cmd": "Sleep",
+            "condition": {
+                "type": "TIME",
+                "time": 1.5
+            },
+            "async_sleep": false,
+            "active": true
+        },
+        {
+            "cmd": "MoveL",
+            "name": "Approach1",
+            "wait_finish": true,
+            "base_type": "ABSOLUTE",
+            "interpolator_type": "VELOCITY",
+            "vel_ratio": 25,
+            "acc_ratio": 100,
+            "coll_sens_level": 3,
+            "bypass_singular": false,
+            "blending": {
+                "type": "NONE"
+            },
+            "shift": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ],
+            "shift_base": "RELATIVE",
+            "offsets": [
+                [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            ],
+            "offset_bases": [
+                "RELATIVE"
+            ],
+            "waypoint_time": [
+                2
+            ],
+            "waypoint_active": [
+                true
+            ],
+            "waypoints": [
+                [
+                    607.3,
+                    -58.99,
+                    499.57,
+                    -0.59,
+                    58.73,
+                    17.64
+                ]
+            ],
+            "waypoints_joint": [
+                [
+                    8.98,
+                    -30.43,
+                    -124.7,
+                    -8.04,
+                    96.67,
+                    3.59
+                ]
+            ],
+            "active": true,
+            "fold": false
+        },
+        {   "cmd": "GripperClose"
+        },
+        {
+            "cmd": "Sleep",
+            "condition": {
+                "type": "TIME",
+                "time": 1.5
+            },
+            "async_sleep": false,
+            "active": true
+        },
+        {
+            "cmd": "MoveL",
+            "name": "Retreat1",
+            "wait_finish": true,
+            "base_type": "ABSOLUTE",
+            "interpolator_type": "VELOCITY",
+            "vel_ratio": 25,
+            "acc_ratio": 100,
+            "coll_sens_level": 3,
+            "bypass_singular": false,
+            "blending": {
+                "type": "NONE"
+            },
+            "shift": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ],
+            "shift_base": "RELATIVE",
+            "offsets": [
+                [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            ],
+            "offset_bases": [
+                "RELATIVE"
+            ],
+            "waypoint_time": [
+                2
+            ],
+            "waypoint_active": [
+                true
+            ],
+            "waypoints": [
+                [
+                    563.4,
+                    -73.79,
+                    471.25,
+                    -0.71,
+                    58.68,
+                    17.53
+                ]
+            ],
+            "waypoints_joint": [
+                [
+                    7.59,
+                    -31.74,
+                    -133.15,
+                    -9.58,
+                    106.44,
+                    2.48
+                ]
+            ],
+            "active": true,
+            "fold": false
+        },
+        {
+            "cmd": "MoveJ",
+            "name": "gohome",
+            "wait_finish": true,
+            "base_type": "ABSOLUTE",
+            "interpolator_type": "VELOCITY",
+            "vel_ratio": 25,
+            "acc_ratio": 100,
+            "coll_sens_level": 3,
+            "blending": {
+                "type": "NONE"
+            },
+            "shift": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ],
+            "shift_base": "RELATIVE",
+            "offsets": [
+                [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            ],
+            "waypoint_time": [
+                2,
+                2
+            ],
+            "waypoint_active": [
+                true,
+                true
+            ],
+            "waypoints": [
+                [
+                    14.36,
+                    9.43,
+                    -113.84,
+                    44.61,
+                    19.78,
+                    -42.77
+                ],
+                [
+                    0.61,
+                    -0.01,
+                    -120,
+                    0.02,
+                    30,
+                    0.01
+                ],
+                [
+                    0,
+                    -0.01,
+                    -90,
+                    0.02,
+                    -90,
+                    0.01
+                ]
+            ],
+            "active": true,
+            "fold": false
+        },
+        {
+            "cmd": "MoveHome",
+            "vel_ratio": 25,
+            "acc_ratio": 100,
+            "active": true
+        }
+    ]
+}

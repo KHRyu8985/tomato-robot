@@ -8,11 +8,13 @@ from src.hand_gesture.hand_tracker import HandTracker
 from src.sam2_model.sam2_tracker import SAM2Tracker
 from src.zed_sdk.zed_tracker import ZedTracker
 from src.sam2_model.utils.mask import find_matching_tomato
+from src.indy_robot.robot_sequence_controller import RobotSequenceController
 
 @click.command()
 @click.option('--camera', type=str, default='zed', help='camera type (zed, femto)')
 @click.option('--show-feature', is_flag=True, default=False, help='visualization: mask decoder feature extraction result')
-def main(camera='zed', show_feature=False):
+@click.option('--robot-control', is_flag=True, default=False, help='enable robot control')
+def main(camera='zed', show_feature=False, robot_control=False):
     if camera == 'zed':
         zed_tracker = ZedTracker()
         
@@ -53,6 +55,18 @@ def main(camera='zed', show_feature=False):
     else:
         print("[INFO] No tomatoes detected")
 
+    # initialize robot controller (only when robot-control option is True)
+    robot_controller = None
+    robot_ready = False  # state of robot control ready
+    if robot_control:
+        try:
+            robot_controller = RobotSequenceController()
+            # robot_controller.connect()
+            print("Robot controller initialized successfully")
+        except Exception as e:
+            print(f"Failed to initialize robot controller: {e}")
+            robot_control = False
+
     while True:
         if camera == 'zed':
             success, frame, objects = zed_tracker.grab_frame_and_objects()
@@ -75,15 +89,41 @@ def main(camera='zed', show_feature=False):
         # hand gesture recognition
         debug_image, point_coords = hand_tracker.process_frame(frame, debug_image, None, None)
         
+        # if new point_coords is detected, activate robot control
+        if point_coords is not None:
+            robot_ready = True
+        
         if show_feature:
             # sam2 tracker with pca visualization
             debug_image, pca_visualization, has_valid_segment, new_mask = sam2_tracker.process_frame_with_visualization(frame, debug_image, point_coords)
 
             if new_mask is not None:
-                matched_tomato_id, max_iou = find_matching_tomato(new_mask, tomato_detection, iou_threshold=0.7, debug=False, original_image=frame)
+                matched_tomato_id, max_iou = find_matching_tomato(new_mask, tomato_detection, iou_threshold=0.8, debug=False, original_image=frame)
 
                 if matched_tomato_id is not None:
                     cv.putText(debug_image, f"Matched: Tomato {matched_tomato_id} (IoU: {max_iou:.2f})", (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv.LINE_AA)
+                    
+                    # robot control is enabled, robot is ready, and there is a matching tomato
+                    if robot_control and robot_controller and robot_ready:
+                        try:
+                            success = robot_controller.execute_sequence(matched_tomato_id)
+                            if success:
+                                print(f"Successfully executed sequence {matched_tomato_id}")
+                                robot_ready = False
+
+                                print("[INFO] Re-detecting tomatoes using yolo...")
+                                detected_frame_yolo, tomato_boxes_buffer, yolo_results = yolo_tracker.detect_tomatoes(frame)
+                                if tomato_boxes_buffer:
+                                    tomato_detection, sam2_mask_image = sam2_tomato_tracker.get_tomato_mask(frame, tomato_boxes_buffer)
+                                    print(f"[INFO] detected {len(tomato_detection)} tomatoes")
+                                else:
+                                    print("[INFO] No tomatoes detected")
+                                    tomato_detection = None
+                                    sam2_mask_image = None
+                            else:
+                                print(f"Failed to execute sequence {matched_tomato_id}")
+                        except Exception as e:
+                            print(f"Failed to execute robot sequence: {e}")
                 else:
                     cv.putText(debug_image, "No matching tomato", (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv.LINE_AA)
             
@@ -96,10 +136,32 @@ def main(camera='zed', show_feature=False):
             debug_image, has_valid_segment, new_mask = sam2_tracker.process_frame(frame, debug_image, point_coords)
             
             if has_valid_segment and new_mask is not None and tomato_detection is not None:
-                matched_tomato_id, max_iou = find_matching_tomato(new_mask, tomato_detection, iou_threshold=0.7, debug=False, original_image=frame)
+                matched_tomato_id, max_iou = find_matching_tomato(new_mask, tomato_detection, iou_threshold=0.8, debug=False, original_image=frame)
 
                 if matched_tomato_id is not None:
                     cv.putText(debug_image, f"Matched: Tomato {matched_tomato_id} (IoU: {max_iou:.2f})", (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv.LINE_AA)
+                    
+                    # robot control is enabled, robot is ready, and there is a matching tomato
+                    if robot_control and robot_controller and robot_ready:
+                        try:
+                            success = robot_controller.execute_sequence(matched_tomato_id)
+                            if success:
+                                print(f"Successfully executed sequence {matched_tomato_id}")
+                                robot_ready = False
+
+                                print("[INFO] Re-detecting tomatoes using yolo...")
+                                detected_frame_yolo, tomato_boxes_buffer, yolo_results = yolo_tracker.detect_tomatoes(frame)
+                                if tomato_boxes_buffer:
+                                    tomato_detection, sam2_mask_image = sam2_tomato_tracker.get_tomato_mask(frame, tomato_boxes_buffer)
+                                    print(f"[INFO] detected {len(tomato_detection)} tomatoes")
+                                else:
+                                    print("[INFO] No tomatoes detected")
+                                    tomato_detection = None
+                                    sam2_mask_image = None
+                            else:
+                                print(f"Failed to execute sequence {matched_tomato_id}")
+                        except Exception as e:
+                            print(f"Failed to execute robot sequence: {e}")
                 else:
                     cv.putText(debug_image, "No matching tomato", (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv.LINE_AA)
                     
@@ -117,6 +179,10 @@ def main(camera='zed', show_feature=False):
             else:
                 print("[INFO] No tomatoes detected")
 
+    # when the program is terminated, clean up resources
+    if robot_control and robot_controller:
+        robot_controller.disconnect()
+    
     if camera == 'zed':
         zed_tracker.close_zed()
     else:
