@@ -85,7 +85,7 @@ class HandTracker:
 
                 debug_image = draw_bounding_rect(True, debug_image, brect)
                 debug_image = draw_landmarks(debug_image, landmark_list)
-                debug_image = draw_info_text(debug_image, brect, handedness, current_hand_gesture, current_finger_gesture)
+                # debug_image = draw_info_text(debug_image, brect, handedness, current_hand_gesture, current_finger_gesture)
 
         else:
             self.point_history.append([0, 0])

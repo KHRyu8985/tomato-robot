@@ -67,29 +67,21 @@ class RobotSequenceController:
             cmd_type = command["cmd"]
             
             if cmd_type == "MoveJ":
-                # self._execute_movej(command["waypoints"])
-                print(f"Executing MoveJ command... {command['waypoints']}")
+                self._execute_movej(command["waypoints"])
             elif cmd_type == "MoveL":
-                # self._execute_movel(command["waypoints"])
-                print(f"Executing MoveL command... {command['waypoints']}")
+                self._execute_movel(command["waypoints"])
             elif cmd_type == "MoveHome":
-                # self._execute_movehome()
-                print(f"Executing MoveHome command...")
+                self._execute_movehome()
             elif cmd_type == "Sleep":
-                # self._execute_sleep(command["condition"]["time"])
-                print(f"Executing Sleep command... {command['condition']['time']}")
+                self._execute_sleep(command["condition"]["time"])
             elif cmd_type == "GripperOpen":
-                # self.dxl.Gripper_open()
-                print(f"Executing GripperOpen command...")
+                self.dxl.Gripper_open()
             elif cmd_type == "Grippergrasp1":
-                # self.dxl.Gripper_grasp1()
-                print(f"Executing Grippergrasp1 command...")
+                self.dxl.Gripper_grasp1()
             elif cmd_type == "Grippergrasp2":
-                # self.dxl.Gripper_grasp2()
-                print(f"Executing Grippergrasp2 command...")
+                self.dxl.Gripper_grasp2()
             elif cmd_type == "GripperClose":
-                # self.dxl.Gripper_close()
-                print(f"Executing GripperClose command...")
+                self.dxl.Gripper_close()
 
         print(f"Sequence {sequence_number} execution completed")
         success = True
@@ -100,29 +92,29 @@ class RobotSequenceController:
         """execute MoveJ command"""
         for i, wp in enumerate(waypoints):
             print(f"Executing MOVEJ [{i+1}] to position... {wp}")
-            self.indy.set_joint_vel_level(2)
-            self.indy.joint_move_to(wp)
-            while not self.indy.get_robot_status()["movedone"]:
-                time.sleep(0.1)
+            # self.indy.set_joint_vel_level(2)
+            # self.indy.joint_move_to(wp)
+            # while not self.indy.get_robot_status()["movedone"]:
+            #     time.sleep(0.1)
                 
     def _execute_movel(self, waypoints):
         """execute MoveL command"""
         for i, wp in enumerate(waypoints):
             converted_wp = [wp[0], wp[1], wp[2]] + wp[3:]
             print(f"Executing MOVEL [{i+1}] to position... {converted_wp}")
-            self.indy.set_task_vel_level(2)
-            self.indy.task_move_to(converted_wp)
-            while not self.indy.get_robot_status()["movedone"]:
-                time.sleep(0.1)
+            # self.indy.set_task_vel_level(2)
+            # self.indy.task_move_to(converted_wp)
+            # while not self.indy.get_robot_status()["movedone"]:
+            #     time.sleep(0.1)
                 
     def _execute_movehome(self):
         """execute MoveHome command"""
         home_position = [0, 0, -90, 0, -90, 0]
         print(f"Executing MOVEHOME to position... {home_position}")
-        self.indy.set_joint_vel_level(2)
-        self.indy.joint_move_to(home_position)
-        while not self.indy.get_robot_status()["movedone"]:
-            time.sleep(0.1)
+        # self.indy.set_joint_vel_level(2)
+        # self.indy.joint_move_to(home_position)
+        # while not self.indy.get_robot_status()["movedone"]:
+        #     time.sleep(0.1)
             
     def _execute_sleep(self, sleep_time):
         """execute Sleep command"""

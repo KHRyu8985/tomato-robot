@@ -1,7 +1,10 @@
 import time
 import os
 import json
-from dynamixel_sdk import *
+from dynamixel_sdk import (
+    PortHandler,
+    PacketHandler
+)
 
 class DynamixelController:
     def __init__(self, port_name="COM11", baudrate=57600, dxl_id=1):

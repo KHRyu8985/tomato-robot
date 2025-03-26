@@ -13,6 +13,7 @@ from src.sam2_model.sam2_tracker import SAM2Tracker
 from src.zed_sdk.zed_tracker import ZedTracker
 from src.yolo_model.yolov8_tomato_tracker import YOLOv8TomatoTracker
 from src.sam2_model.utils.mask import find_matching_tomato
+from src.indy_robot.robot_sequence_controller import RobotSequenceController
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -21,6 +22,7 @@ hand_tracker = HandTracker()
 sam2_tracker = SAM2Tracker()
 yolo_tracker = YOLOv8TomatoTracker()
 sam2_tomato_tracker = SAM2Tracker(class_name="tomato")
+robot_controller = RobotSequenceController()
 
 DETECT_TOMATOES = False
 sam2_mask_image = None
@@ -31,6 +33,10 @@ thread_running = False
 SHOW_FEATURE = False                                                                                                                       
 SHOW_STREAM = False
 CAMERA_TYPE = 'zed'
+
+frame = None
+robot_ready = False
+robot_executing = False
 
 # Loading animation
 def create_loading_animation(frame_idx, width=640, height=480):
@@ -62,7 +68,7 @@ def process_tomatoes(frame):
 
 def process_video():
     global thread_running, SHOW_FEATURE, SHOW_STREAM, CAMERA_TYPE, loading_frame_idx
-    global DETECT_TOMATOES, sam2_mask_image, tomato_detection
+    global DETECT_TOMATOES, sam2_mask_image, tomato_detection, frame, robot_ready
 
     if CAMERA_TYPE == 'zed':
         zed_tracker = ZedTracker()
@@ -87,6 +93,15 @@ def process_video():
         if not ret:
             print("[Error] failed to get initial frame")
             return
+    
+    # initialize robot controller (only when robot-control option is True)
+
+    # if robot_controller.connect():
+    #     print("[INFO] connected to robot controller")
+    #     robot_control = True
+    # else:
+    #     print("[Error] failed to connect to robot controller")
+    #     robot_control = False
 
     _, _, _, tomato_detection, sam2_mask_image = process_tomatoes(initial_frame)
 
@@ -124,7 +139,10 @@ def process_video():
             DETECT_TOMATOES = False
 
         debug_image = frame.copy()
-        debug_image, point_coords = hand_tracker.process_frame(frame, debug_image, None, None)
+        if not robot_executing:
+            debug_image, point_coords = hand_tracker.process_frame(frame, debug_image, None, None)
+            if point_coords is not None:
+                robot_ready = True
         
         if point_coords is not None:
             if stream_paused:
@@ -155,9 +173,9 @@ def process_video():
                 
                 if has_valid_segment and new_mask is not None and tomato_detection:
                     matched_tomato_id, max_iou = find_matching_tomato(new_mask, tomato_detection, iou_threshold=0.8)
-            
-            socketio.emit('tomato_match_result', {'matched_id': matched_tomato_id})
-            
+
+            if robot_ready:
+                socketio.emit('tomato_match_result', {'matched_id': matched_tomato_id})
             current_time = time.time()
             
             if has_valid_segment:
@@ -217,6 +235,26 @@ def handle_detect_tomatoes():
     global DETECT_TOMATOES
     
     DETECT_TOMATOES = True
+
+@socketio.on('execute_robot_sequence')
+def handle_robot_sequence(data):
+    global frame, robot_ready, robot_executing
+
+    tomato_id = data.get('tomato_id')
+    if tomato_id is not None and robot_controller and robot_ready and not robot_executing:
+        try:
+            robot_executing = True
+            success = robot_controller.execute_sequence(tomato_id)
+            if success:
+                print(f"[INFO] Successfully executed sequence {tomato_id}")
+                _, _, _, tomato_detection, sam2_mask_image = process_tomatoes(frame)
+                socketio.emit('robot_sequence_complete', {'tomato_id': tomato_id})
+                robot_ready = False
+                robot_executing = False
+            else:
+                print(f"[ERROR] Failed to execute sequence {tomato_id}")
+        except Exception as e:
+            print(f"[ERROR] Failed to execute robot sequence: {e}")
 
 @click.command()
 @click.option('--camera', default='zed', help='Camera type (zed, femto)')
