@@ -1,0 +1,26 @@
+{
+  "Name": "grasp_apple_1",
+  "Program": [
+    {"cmd":"CollisionConfig","policy":"PAUSE","duration":0},
+    {"cmd":"VisionConfig"},
+    {"cmd":"VariableConfig","local_list":[]},
+    {"cmd":"MoveHome","vel_ratio":25,"acc_ratio":100,"active":true},
+    {"cmd":"MoveJ","name":"P","wait_finish":true,"base_type":"ABSOLUTE","interpolator_type":"VELOCITY","vel_ratio":25,"acc_ratio":100,"coll_sens_level":3,"blending":{"type":"NONE"},"shift":[0,0,0,0,0,0],"shift_base":"RELATIVE","offsets":[[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]],"waypoint_time":[2,2,2],"waypoint_active":[true,true,true],"waypoints":[[-0.01,-10.92,-127.04,0.08,47.23,0],[25.28,-41.39,-142.71,-0.68,144.25,0.04],[9.76,-72.91,-59.53,-0.25,112.15,0.05]],"active":true,"fold":false},
+    {"cmd":"Grippergrasp1"},
+    {"cmd":"Sleep","condition":{"type":"TIME","time":1.5},"async_sleep":false,"active":true},
+    {"cmd":"MoveL","name":"1600A","wait_finish":true,"base_type":"ABSOLUTE","interpolator_type":"VELOCITY","vel_ratio":25,"acc_ratio":100,"coll_sens_level":3,"bypass_singular":false,"blending":{"type":"NONE"},"shift":[0,0,0,0,0,0],"shift_base":"RELATIVE","offsets":[[0,0,0,0,0,0]],"offset_bases":["RELATIVE"],"waypoint_time":[2],"waypoint_active":[true],"waypoints":[[787.65,-52.91,506.51,-0.17,20.33,9.9]],"waypoints_joint":[[9.76,-63.96,-61.99,-0.23,105.62,0.08]],"active":true,"fold":false},
+    {"cmd":"GripperClose"},
+    {"cmd":"Sleep","condition":{"type":"TIME","time":1.5},"async_sleep":false,"active":true},
+    {"cmd":"MoveL","name":"T","wait_finish":true,"base_type":"ABSOLUTE","interpolator_type":"VELOCITY","vel_ratio":25,"acc_ratio":100,"coll_sens_level":3,"bypass_singular":false,"blending":{"type":"NONE"},"shift":[0,0,0,0,0,0],"shift_base":"RELATIVE","offsets":[[0,0,0,0,0,0]],"offset_bases":["RELATIVE"],"waypoint_time":[2],"waypoint_active":[true],"waypoints":[[725.55,-64.3,336.36,-0.17,20.33,9.9]],"waypoints_joint":[[9.69,-75.03,-72.17,-0.3,126.87,0.02]],"active":true,"fold":false},
+    {"cmd":"MoveJ","name":"PH","wait_finish":true,"base_type":"ABSOLUTE","interpolator_type":"VELOCITY","vel_ratio":25,"acc_ratio":100,"coll_sens_level":3,"blending":{"type":"NONE"},"shift":[0,0,0,0,0,0],"shift_base":"RELATIVE","offsets":[[0,0,0,0,0,0]],"waypoint_time":[2],"waypoint_active":[true],"waypoints":[[34.34,-40.37,-134.74,-0.28,140.73,0.02]],"active":true,"fold":false},
+    {"cmd":"MoveHome","vel_ratio":25,"acc_ratio":100,"active":true},
+    {"cmd":"MoveJ","name":"B","wait_finish":true,"base_type":"ABSOLUTE","interpolator_type":"VELOCITY","vel_ratio":25,"acc_ratio":100,"coll_sens_level":3,"blending":{"type":"NONE"},"shift":[0,0,0,0,0,0],"shift_base":"RELATIVE","offsets":[[0,0,0,0,0,0]],"waypoint_time":[2],"waypoint_active":[true],"waypoints":[[150.01,-27.48,-90.03,49.47,-46.42,0]],"active":true,"fold":false},
+    {"cmd":"MoveL","name":"A","wait_finish":true,"base_type":"ABSOLUTE","interpolator_type":"VELOCITY","vel_ratio":25,"acc_ratio":100,"coll_sens_level":3,"bypass_singular":false,"blending":{"type":"NONE"},"shift":[0,0,0,0,0,0],"shift_base":"RELATIVE","offsets":[[0,0,0,0,0,0]],"offset_bases":["RELATIVE"],"waypoint_time":[2],"waypoint_active":[true],"waypoints":[[-562.32,227.9,138.78,-42.48,176.41,118.36]],"waypoints_joint":[[157.26,-42.39,-82.84,55.92,-36.83,-3.58]],"active":true,"fold":false},
+    {"cmd":"GripperOpen"},
+    {"cmd":"Sleep","condition":{"type":"TIME","time":1.5},"async_sleep":false,"active":true},
+    {"cmd":"MoveL","name":"T","wait_finish":true,"base_type":"ABSOLUTE","interpolator_type":"VELOCITY","vel_ratio":25,"acc_ratio":100,"coll_sens_level":3,"bypass_singular":false,"blending":{"type":"NONE"},"shift":[0,0,0,0,0,0],"shift_base":"RELATIVE","offsets":[[0,0,0,0,0,0]],"offset_bases":["RELATIVE"],"waypoint_time":[2],"waypoint_active":[true],"waypoints":[[-464.21,272.42,255.55,-42.46,176.42,118.34]],"waypoints_joint":[[149.3,-26.25,-90.39,48.88,-47.47,0.37]],"active":true,"fold":false},
+    {"cmd":"GripperClose"},
+    {"cmd":"Sleep","condition":{"type":"TIME","time":1.5},"async_sleep":false,"active":true},
+    {"cmd":"MoveHome","vel_ratio":25,"acc_ratio":100,"active":true}
+  ]
+}

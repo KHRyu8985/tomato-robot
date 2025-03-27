@@ -1,3 +1,4 @@
+import autorootcwd
 import time
 import os
 import json
@@ -7,7 +8,7 @@ from dynamixel_sdk import (
 )
 
 class DynamixelController:
-    def __init__(self, port_name="COM11", baudrate=57600, dxl_id=1):
+    def __init__(self, port_name="COM3", baudrate=57600, dxl_id=1):
         """Dynamixel motor control class"""
         self.PORT_NAME = port_name
         self.BAUDRATE = baudrate
@@ -23,7 +24,7 @@ class DynamixelController:
         self.EXTENDED_POSITION_MODE = 4  # Extended Position Mode value
 
         # JSON file path for motor positions
-        self.POSITION_DIR = "C:\Python\Indy7"
+        self.POSITION_DIR = "src/indy_robot/"
         self.POSITION_FILE = os.path.join(self.POSITION_DIR, "motor_positions.json")
 
         # Initialize Dynamixel port

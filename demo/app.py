@@ -95,7 +95,6 @@ def process_video():
             return
     
     # initialize robot controller (only when robot-control option is True)
-
     # if robot_controller.connect():
     #     print("[INFO] connected to robot controller")
     #     robot_control = True
