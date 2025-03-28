@@ -68,21 +68,28 @@ class YOLOv8TomatoTracker:
         tomato_boxes = [] # bounding box coordinates
         tomato_confs = [] # confidence score
         detected_frame = frame.copy()
-
+        
+        # select target class
+        # 1: big_green, 2: big_half_ripened, 3: big_full_ripened, 4: little_green, 5: little_half_ripened, 6: little_full_ripened
+        target_class_ids = [2, 3, 5, 6]
+        
         for result in results:
             for box in result.boxes:
                 if box.conf >= confidence_threshold:
-                    xyxy = box.xyxy[0].cpu().numpy().astype(int)
-                    tomato_boxes.append(xyxy)
-                    tomato_confs.append(float(box.conf))
-
                     class_id = int(box.cls[0])
                     class_name = results[0].names[class_id]
-                    label = f'{class_name} {box.conf[0]:.2f}'
+                    
+                    if class_id in target_class_ids:
+                        xyxy = box.xyxy[0].cpu().numpy().astype(int)
+                        tomato_boxes.append(xyxy)
+                        tomato_confs.append(float(box.conf))
 
-                    cv2.rectangle(detected_frame, (xyxy[0], xyxy[1]), (xyxy[2], xyxy[3]), (0, 255, 0), 2)
-                    cv2.putText(detected_frame, label, (xyxy[0], xyxy[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                        label = f'{class_name} {box.conf[0]:.2f}'
 
+                        cv2.rectangle(detected_frame, (xyxy[0], xyxy[1]), (xyxy[2], xyxy[3]), (0, 255, 0), 2)
+                        cv2.putText(detected_frame, label, (xyxy[0], xyxy[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    
+        
         # NMS
         tomato_boxes = self.nms_tomato_boxes(tomato_boxes, tomato_confs, iou_threshold=0.5)
         
