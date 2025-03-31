@@ -139,7 +139,7 @@ def process_video():
 
         debug_image = frame.copy()
         if not robot_executing:
-            debug_image, point_coords, _ = hand_tracker.process_frame(frame, debug_image, None, None)
+            debug_image, point_coords, expected_point_coords = hand_tracker.process_frame(frame, debug_image, None, None, use_point_tracker=True)
             if point_coords is not None:
                 robot_ready = True
         
@@ -159,7 +159,7 @@ def process_video():
             
             if SHOW_FEATURE:
                 debug_image, pca_visualization, has_valid_segment, new_mask = sam2_tracker.process_frame_with_visualization(frame, debug_image, point_coords)
-                
+               
                 if new_mask is not None and tomato_detection:
                     matched_tomato_id, max_iou = find_matching_tomato(new_mask, tomato_detection, iou_threshold=0.8)
                 
@@ -190,6 +190,14 @@ def process_video():
                 loading_frame_idx = 0
                 continue
 
+            if expected_point_coords is not None:
+                x, y = int(expected_point_coords[0]), int(expected_point_coords[1])
+                size = 7
+                cv2.line(debug_image, (x - size, y), (x + size, y), color=(0, 0, 255), thickness=3)
+                cv2.line(debug_image, (x, y - size), (x, y + size), color=(0, 0, 255), thickness=3)
+                cv2.line(debug_image, (x - size, y), (x + size, y), color=(255, 255, 255), thickness=1)
+                cv2.line(debug_image, (x, y - size), (x, y + size), color=(255, 255, 255), thickness=1)
+
             _, buffer = cv2.imencode('.jpg', debug_image)
             frame_base64 = base64.b64encode(buffer).decode('utf-8')
             socketio.emit('video_frame', {'image': frame_base64})
@@ -199,7 +207,7 @@ def process_video():
                 viewer_frame_base64 = base64.b64encode(buffer_viewer).decode('utf-8')
                 socketio.emit('viewer_video_frame', {'image': viewer_frame_base64})
         
-        time.sleep(0.01)
+        time.sleep(0.03)
 
     socketio.emit('stream_stopped', {})
     if CAMERA_TYPE != 'zed' and 'cap' in locals() and cap.isOpened():

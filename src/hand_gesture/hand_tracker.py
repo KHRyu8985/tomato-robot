@@ -40,13 +40,14 @@ class HandTracker:
         with open(filepath, encoding='utf-8-sig') as f:
             return [row[0] for row in csv.reader(f)]
 
-    def process_frame(self, image, debug_image, number, mode):
+    def process_frame(self, image, debug_image, number, mode, use_point_tracker=False):
         image_rgb = cv.cvtColor(image, cv.COLOR_BGR2RGB)
         image_rgb.flags.writeable = False
         results = self.hands.process(image_rgb)
         image_rgb.flags.writeable = True
 
         prompt_point = None
+        expected_point_coords = None
 
         if results.multi_hand_landmarks is not None:
             for hand_landmarks, handedness in zip(results.multi_hand_landmarks, results.multi_handedness):
@@ -75,9 +76,9 @@ class HandTracker:
                 current_hand_gesture = self.keypoint_classifier_labels[hand_sign_id]
                 current_finger_gesture = self.point_history_classifier_labels[most_common_fg_id[0][0]]
 
-                self.prev_hand_gesture, self.prev_finger_gesture, point_coords = action_for_sign(
+                self.prev_hand_gesture, self.prev_finger_gesture, point_coords, expected_point_coords = action_for_sign(
                     current_hand_gesture, current_finger_gesture,
-                    self.prev_hand_gesture, self.prev_finger_gesture, landmark_list
+                    self.prev_hand_gesture, self.prev_finger_gesture, landmark_list, use_point_tracker
                 )
 
                 if point_coords is not None:
@@ -91,4 +92,4 @@ class HandTracker:
             self.point_history.append([0, 0])
 
         debug_image = draw_point_history(debug_image, self.point_history)
-        return debug_image, prompt_point
+        return debug_image, prompt_point, expected_point_coords

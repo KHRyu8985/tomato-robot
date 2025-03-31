@@ -10,8 +10,23 @@ def run_once_on_pointer():
 def run_once_on_stop(landmark_list):
     print("[INFO] Gesture is changed to stop")
 
-def action_for_sign(current_hand_gesture, current_finger_gesture, prev_hand_gesture, prev_finger_gesture, landmark_list):
+def action_for_sign(current_hand_gesture, current_finger_gesture, prev_hand_gesture, prev_finger_gesture, landmark_list, use_point_tracker=False):
     point_coords = None
+    expected_point_coords = None
+
+    if use_point_tracker:
+        if current_hand_gesture.lower() == "close":
+            p5 = landmark_list[5]
+            p6 = landmark_list[6]
+
+            vec = [p6[0] - p5[0], p6[1] - p5[1]]
+            norm = (vec[0] ** 2 + vec[1] ** 2) ** 0.5
+            offset = 160
+
+            if norm != 0:   
+                expected_point_coords = [int(p5[0] + offset * vec[0] / norm), int(p5[1] + offset * vec[1] / norm)]
+            else:
+                expected_point_coords = None
 
     if current_hand_gesture.lower() == "open" and prev_hand_gesture != "open":
         run_once_on_open()
@@ -23,18 +38,32 @@ def action_for_sign(current_hand_gesture, current_finger_gesture, prev_hand_gest
     if current_hand_gesture.lower() == "pointer":
         if prev_hand_gesture != "pointer":
             run_once_on_pointer()
-            p7 = landmark_list[7]
-            p8 = landmark_list[8]
-
-            vec = [p8[0] - p7[0], p8[1] - p7[1]]
-            norm = (vec[0] ** 2 + vec[1] ** 2) ** 0.5
-            offset = 30
-
-            if norm != 0:
-                point_coords = [int(p8[0] + offset * vec[0] / norm), int(p8[1] + offset * vec[1] / norm)]
-            else:
-                point_coords = [p8[0] + offset, p8[1] + offset]
             prev_hand_gesture = "pointer"
+
+            if use_point_tracker:
+                p5 = landmark_list[5]   
+                p6 = landmark_list[6]
+
+                vec = [p6[0] - p5[0], p6[1] - p5[1]]
+                norm = (vec[0] ** 2 + vec[1] ** 2) ** 0.5
+                offset = 160
+                    
+                if norm != 0:
+                    point_coords = [int(p5[0] + offset * vec[0] / norm), int(p5[1] + offset * vec[1] / norm)]
+                else:
+                    point_coords = [p5[0] + offset, p5[1] + offset]
+            else:
+                p7 = landmark_list[7]
+                p8 = landmark_list[8]
+
+                vec = [p8[0] - p7[0], p8[1] - p7[1]]
+                norm = (vec[0] ** 2 + vec[1] ** 2) ** 0.5
+                offset = 30
+
+                if norm != 0:
+                    point_coords = [int(p8[0] + offset * vec[0] / norm), int(p8[1] + offset * vec[1] / norm)]
+                else:
+                    point_coords = [p8[0] + offset, p8[1] + offset]
             
         if current_finger_gesture.lower() == "stop":
             if prev_finger_gesture != "stop":
@@ -43,7 +72,7 @@ def action_for_sign(current_hand_gesture, current_finger_gesture, prev_hand_gest
 
         elif current_finger_gesture.lower() != "stop":
             prev_finger_gesture = "None"
-    return prev_hand_gesture, prev_finger_gesture, point_coords
+    return prev_hand_gesture, prev_finger_gesture, point_coords, expected_point_coords
 
 def terminate_for_sign(current_hand_gesture, current_finger_gesture, landmark_list, alert_gesture):
     terminate = False

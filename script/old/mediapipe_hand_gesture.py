@@ -161,7 +161,7 @@ def mediapipe_hand_gesture(alert_gesture):
                 # Get current gesture text
                 current_hand_gesture = keypoint_classifier_labels[hand_sign_id]
                 current_finger_gesture = point_history_classifier_labels[most_common_fg_id[0][0]]
-                prev_hand_gesture, prev_finger_gesture, point_coords = action_for_sign(current_hand_gesture, current_finger_gesture, prev_hand_gesture, prev_finger_gesture, landmark_list)
+                prev_hand_gesture, prev_finger_gesture, point_coords, _ = action_for_sign(current_hand_gesture, current_finger_gesture, prev_hand_gesture, prev_finger_gesture, landmark_list)
                 # terminate, point_coords = terminate_for_sign(current_hand_gesture, current_finger_gesture, landmark_list, alert_gesture)
 
                 print(current_hand_gesture, current_finger_gesture)
