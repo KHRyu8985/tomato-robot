@@ -139,7 +139,7 @@ def process_video():
 
         debug_image = frame.copy()
         if not robot_executing:
-            debug_image, point_coords, expected_point_coords = hand_tracker.process_frame(frame, debug_image, None, None, use_point_tracker=True)
+            debug_image, point_coords, expected_point_coords, _ = hand_tracker.process_frame(frame, debug_image, None, None, use_point_tracker=True)
             if point_coords is not None:
                 robot_ready = True
         

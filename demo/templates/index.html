@@ -15,6 +15,50 @@
             position: relative;
             overflow-x: hidden;
         }
+
+        .background-circle {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(0, 4, 255, 0.1);
+            z-index: -1;
+        }
+        #circle1 {
+            width: 15vw;
+            height: 15vw;
+            top: 120px;
+            right: 10%;
+        }
+        #circle2 {
+            width: 10vw;
+            height: 10vw;
+            top: 350px;
+            left: 10%;
+        }
+        #circle3 {
+            width: 10vw;
+            height: 10vw;
+            top: 500px;
+            right: 25%;
+        }
+        #circle4 {
+            width: 25vw;
+            height: 25vw;
+            top: 800px;
+            left: 0px;
+        }
+        #circle5 {
+            width: 5vw;
+            height: 5vw;
+            top: 100px;
+            left: 5%;
+        }
+        #circle6 {
+            width: 20vw;
+            height: 20vw;
+            top: 900px;
+            right: 5%;
+        }
+        
         #head-container { 
             display: flex; 
             justify-content: space-between; 
@@ -81,48 +125,6 @@
             transform: translateX(30px);
         }
         
-        .background-circle {
-            position: absolute;
-            border-radius: 50%;
-            background-color: rgba(0, 4, 255, 0.1);
-            z-index: -1;
-        }
-        #circle1 {
-            width: 15vw;
-            height: 15vw;
-            top: 120px;
-            right: 10%;
-        }
-        #circle2 {
-            width: 10vw;
-            height: 10vw;
-            top: 350px;
-            left: 10%;
-        }
-        #circle3 {
-            width: 10vw;
-            height: 10vw;
-            top: 500px;
-            right: 25%;
-        }
-        #circle4 {
-            width: 25vw;
-            height: 25vw;
-            top: 800px;
-            left: 0px;
-        }
-        #circle5 {
-            width: 5vw;
-            height: 5vw;
-            top: 100px;
-            left: 5%;
-        }
-        #circle6 {
-            width: 20vw;
-            height: 20vw;
-            top: 900px;
-            right: 5%;
-        }
         #body-container { 
             display: flex; 
             flex-direction: column; 
@@ -134,21 +136,33 @@
             position: relative;
             z-index: 1;
         }
-        #body-container p { color: #0004FF; font-size: 28px; font-weight: bold; margin-bottom: 20px; }
-        #title { display: flex; justify-content: center; align-items: center; width: 100%; height: 50px; margin-bottom: 20px; }
-        #title p { color: #0004FF; font-size: 32px; font-weight: bold; margin-bottom: 20px; }
+        
+        #title { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            width: 100%; 
+            height: 50px; 
+            margin-bottom: 20px; 
+        }
+        
+        #title p { 
+            color: #0004FF; 
+            font-size: 32px; 
+            font-weight: bold; 
+            margin-bottom: 20px; 
+        }
 
         #stream-container { 
             display: flex; 
             justify-content: center; 
             align-items: center; 
             width: 90%;  
-            gap: 20px; 
             border-radius: 15px; 
             padding: 20px; 
         }
 
-        #stream-screen, #viewer-screen { 
+        #stream-screen { 
             width: 50%;
             display: flex; 
             flex-direction: column; 
@@ -156,120 +170,93 @@
             align-items: center;
         }
 
-        #video_feed, #viewer_feed { 
+        #video_feed { 
             width: 100%; 
             border-radius: 15px; 
             margin: 20px auto; 
             display: block; 
         }
 
-        #feature-screen { 
+        #waiting-screen { 
             display: flex; 
             flex-direction: column; 
             justify-content: center; 
             align-items: center; 
-            width: 30%;
+            width: 100%; 
+        }
+        
+        #waiting-screen h1 { 
+            color: #0004FF; 
+            font-size: 28px; 
+            font-weight: bold; 
+            margin-bottom: 20px; 
+        }
+        
+        #waiting-screen p { 
+            color: #aaaaaa; 
+            font-size: 20px; 
+            margin-bottom: 20px; 
+        }
+
+        #tomato-screen {
+            display: flex;
             margin: 20px auto;
+            justify-content: center; 
+            align-items: center; 
         }
 
-        #feature_feed { 
-            width: 100%;
-            border-radius: 15px; 
-            margin: 20px auto; 
-            display: block; 
-        }
-
-        #waiting-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
-        #waiting-screen h1 { color: #0004FF; font-size: 28px; font-weight: bold; margin-bottom: 20px; }
-        #waiting-screen p { color: #aaaaaa; font-size: 20px; margin-bottom: 20px; }
-
-        button { display: flex; justify-content: center; align-items: center; padding: 15px 30px; border: none; border-radius: 30px;
-            background-color: rgba(0, 4, 255, 0.1); color: #0004FF; font-size: 28px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); }
-            
-        #detect-tomato-button {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background-color: #0004FF;
-            color: white;
-            font-size: 24px;
+        #mode-indicator {
             display: flex;
             justify-content: center;
             align-items: center;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            z-index: 100;
-            transition: transform 0.3s, background-color 0.3s;
+            padding: 5px 15px;
+            border-radius: 15px;
+            background-color: rgba(0, 4, 255, 0.1);
+            color: #0004FF;
+            font-weight: bold;
+            font-size: 16px;
         }
-        
-        #detect-tomato-button:hover {
-            transform: scale(1.1);
-            background-color: #0002BB;
-        }
-        
-        #tomato-popup {
-            display: none;
+
+        #logging-message {
             position: fixed;
-            top: 0;
+            bottom: -100px;
             left: 0;
             width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-        
-        #tomato-popup-content {
-            background-color: white;
-            padding: 20px;
-            border-radius: 15px;
-            max-width: 90vw;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-        }
-        
-        #tomato-popup img {
-            max-width: 100%;
-            max-height: 80vh;
-            border-radius: 10px;
-        }
-        
-        #tomato-popup-close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 28px;
+            text-align: center;
+            padding: 15px;
+            background-color: rgba(0, 4, 255, 0.1);
             color: #0004FF;
-            cursor: pointer;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1001;
-            padding: 10px;
-            transition: background-color 0.3s;
-        }
-        
-        #tomato-popup-close:hover {
-            background-color: rgba(0, 4, 255, 0.2);
-        }
-        
-        #tomato-popup h2 {
-            color: #0004FF;
-            font-size: 32px;
             font-weight: bold;
-            margin-bottom: 20px;
+            font-size: 18px;
+            z-index: 1000;
+            transition: bottom 0.5s ease-in-out;
+            pointer-events: none;
+        }
+
+        #logging-message.show {
+            bottom: 30px !important;
+        }
+
+        #save-notification {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: #0004FF;
+            color: white;
+            border-radius: 20px;
+            font-weight: bold;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 1001;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            pointer-events: none;
+        }
+
+        #save-notification.show {
+            opacity: 1;
+            visibility: visible;
         }
     </style>
 </head>
@@ -284,17 +271,11 @@
     <div id="head-container">
         <p style="color: #0004FF; font-size: 32px; font-weight: bold;">Tomato Robot 🤖</p>
         <div class="switch-container">
+            <div id="mode-indicator">Mode: Inference</div>
             <div class="switch-group">
-                <span class="switch-label">Feature Visualization</span>
+                <span class="switch-label">Video On/Off</span>
                 <label class="switch">
-                    <input type="checkbox" id="feature-toggle" onclick="toggleFeature()">
-                <span class="slider"></span>
-                </label>
-            </div>
-            <div class="switch-group">
-                <span class="switch-label">Tomato Detection</span>
-                <label class="switch">
-                    <input type="checkbox" id="viewer-toggle" onclick="toggleViewer()">
+                    <input type="checkbox" id="video-toggle" checked>
                     <span class="slider"></span>
                 </label>
             </div>
@@ -305,126 +286,88 @@
         <div id="title"><p>안녕하세요🙌</p></div>
 
         <div id="waiting-screen">
-            <canvas id="canvas"></canvas>
+            <canvas id="canvas-hand"></canvas>
             <h1>카메라를 향해 손을 내밀어 주세요!</h1>
             <p>waiting for hand...</p>
         </div>
 
         <div id="stream-container">
-            <div id="stream-screen" style="display:none;">
+            <div id="stream-screen" style="display:block;">
                 <img id="video_feed" src="" alt="Video Feed">
+                <div id="tomato-screen" style="display:block;">
+                    <canvas id="canvas-tomato"></canvas>
+                </div>
             </div>
-            <div id="viewer-screen" style="display:none;">
-                <img id="viewer_feed" src="" alt="Viewer Feed">
-            </div>
-        </div>
-
-        <div id="feature-screen" style="display:none;">
-            <img id="feature_feed" src="" alt="Feature Visualization"">
-        </div>
-    </div>
-    <div id="detect-tomato-button" onclick="detectTomatoes()">
-        🍅
-    </div>
-    <div id="tomato-popup">
-        <div id="tomato-popup-content">
-            <div id="tomato-popup-close" onclick="closeTomatoPopup()">✖</div>
-            <h2>토마토 탐지 결과🔎</h2>
-            <img id="tomato_detection_feed" src="" alt="Tomato Detection">
         </div>
     </div>
     
+    <div id="logging-message">1-4 키를 눌러 토마토 좌표를 저장하세요. (ESC: 인퍼런스 모드로 돌아가기)</div>
+    <div id="save-notification"></div>
+    
     <script>
         var socket = io();
-        var showFeature = false;
         var streaming = false;
         var firstFrameReceived = false;
-        var lastFeatureState = false;
-        var showViewer = false;
-        var lastViewerState = false;
         var currentMatchedTomatoId = null;
-        var countdownInterval = null;
-        var countdownSeconds = 3;
-        var harvestingTomato = false;
         var lastMatchedTomatoTime = 0;
         var sameIdDuration = 0;
+        var harvestingTomato = false;
+        var videoEnabled = localStorage.getItem('videoEnabled') !== 'false';
+        let currentMode = 'inference';
         
         document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('video-toggle').checked = videoEnabled;
+            
             startStream();
-            document.getElementById('feature-screen').style.display = "none";
-            document.getElementById('feature-toggle').checked = false;
-            document.getElementById('viewer-screen').style.display = "none";
-            document.getElementById('viewer-toggle').checked = false;
+            toggleVideoFeed();
+            toggleTomatoScreen();
+            toggleUI(false);
+            currentMode = 'inference';
+            const loggingMessage = document.getElementById('logging-message');
+            if (loggingMessage) {
+                loggingMessage.classList.remove('show');
+            }
         });
-
-        function setFeatureState(enabled) {
-            showFeature = enabled;
-            document.getElementById('feature_feed').style.display = enabled ? "block" : "none";
-            document.getElementById('feature-toggle').checked = enabled;
-            socket.emit('set_feature', { show_feature: enabled });
-        }
-
-        function setViewerState(enabled) {
-            showViewer = enabled;
-            document.getElementById('viewer_feed').style.display = enabled ? "block" : "none";
-            document.getElementById('viewer-screen').style.display = enabled ? "block" : "none";
-            document.getElementById('viewer-toggle').checked = enabled;
-        }
 
         function toggleUI(showStream) {
             document.getElementById('waiting-screen').style.display = showStream ? 'none' : 'flex';
             document.getElementById('stream-screen').style.display = showStream ? 'block' : 'none';
-            if (showFeature) {
-                document.getElementById('feature-screen').style.display = showStream ? 'block' : 'none';
-            }
-            if (showViewer) {
-                document.getElementById('viewer-screen').style.display = showStream ? 'block' : 'none';
-            }
-            
-            if (!showStream) {
-                lastFeatureState = showFeature;
-                if (!lastFeatureState) {
-                    setFeatureState(false);
-                }
-                if (!lastViewerState) {
-                    setViewerState(false);
-                }
-                currentMatchedTomatoId = null;
-                clearInterval(countdownInterval);
-                countdownInterval = null;
-                countdownSeconds = 3;
-                harvestingTomato = false;
-                sameIdDuration = 0;
-            }
-            else if (lastFeatureState) {
-                setFeatureState(true);
-            }
-            else if (lastViewerState) {
-                setViewerState(true);
-            }
 
+            if (!showStream) {
+                currentMatchedTomatoId = null;
+                sameIdDuration = 0;
+                harvestingTomato = false;
+            } else {
+                toggleVideoFeed();
+                toggleTomatoScreen();
+            }
             updateTitleMessage();
         }
 
-        function toggleFeature() {
-            const isChecked = document.getElementById('feature-toggle').checked;
-            setFeatureState(isChecked);
-            lastFeatureState = isChecked;
+        document.getElementById('video-toggle').addEventListener('change', function(e) {
+            videoEnabled = e.target.checked;
+            localStorage.setItem('videoEnabled', videoEnabled);
+            
+            toggleVideoFeed();
+            toggleTomatoScreen();
+        });
+
+        function toggleVideoFeed() {
+            const videoFeed = document.getElementById('video_feed');
+            if (videoEnabled) {
+                videoFeed.style.display = 'block';
+            } else {
+                videoFeed.style.display = 'none';
+            }
         }
 
-        function toggleViewer() {
-            const isChecked = document.getElementById('viewer-toggle').checked;
-            setViewerState(isChecked);
-            lastViewerState = isChecked;
-        }
-        
-        function detectTomatoes() {
-            socket.emit('detect_tomatoes');
-            console.log("토마토 감지 요청 전송");
-        }
-
-        function closeTomatoPopup() {
-            document.getElementById('tomato-popup').style.display = 'none';
+        function toggleTomatoScreen() {
+            const tomatoScreen = document.getElementById('tomato-screen');
+            if (!videoEnabled) {
+                tomatoScreen.style.display = 'flex';
+            } else {
+                tomatoScreen.style.display = 'none';
+            }
         }
 
         socket.on('video_frame', function(data) {
@@ -434,41 +377,8 @@
                 if (!firstFrameReceived) {
                     firstFrameReceived = true;
                     toggleUI(true);
-                    if (lastViewerState) {
-                        setViewerState(true);
-                    }
-                    
-                    const loadingIndicator = document.getElementById('loading-indicator');
-                    if (loadingIndicator) {
-                        loadingIndicator.remove();
-                    }
                 }
             }
-        });
-
-        socket.on('feature_frame', function(data) {
-            console.log(showFeature, streaming, firstFrameReceived);
-            if (showFeature && streaming) {
-                document.getElementById('feature_feed').src = 'data:image/jpeg;base64,' + data.image;
-                document.getElementById('feature-screen').style.display = "block";
-            } else {
-                document.getElementById('feature-screen').style.display = "none";
-            }
-        });
-
-        socket.on('viewer_video_frame', function(data) {
-            if (showViewer && streaming) {
-                document.getElementById('viewer_feed').src = 'data:image/jpeg;base64,' + data.image;
-                document.getElementById('viewer-screen').style.display = "block";
-            } else {
-                document.getElementById('viewer-screen').style.display = "none";
-            }
-        });
-        
-        socket.on('tomato_detection_result', function(data) {
-            document.getElementById('tomato_detection_feed').src = 'data:image/jpeg;base64,' + data.image;
-            document.getElementById('tomato-popup').style.display = 'flex';
-            console.log("Received tomato detection result");
         });
 
         socket.on('segment_status', function(data) {
@@ -476,24 +386,10 @@
                 if (data.resumed) {
                     console.log("Stream resumed");
                     toggleUI(true);
-                    if (lastViewerState) {
-                        setViewerState(true);
-                    }
                 }
             } else if (data.timeout) {
-                console.log("Object not detected for 5 seconds, stream paused");
+                console.log("Hand not detected for 5 seconds, stream paused");
                 toggleUI(false);
-                if (!lastViewerState) {
-                    setViewerState(false);
-                }
-            }
-        });
-
-        socket.on('stream_paused', function(data) {
-            console.log("Stream paused");
-            toggleUI(false);
-            if (!lastViewerState) {
-                setViewerState(false);
             }
         });
 
@@ -501,94 +397,90 @@
             const now = Date.now();
             
             if (data.matched_id === null || data.matched_id !== currentMatchedTomatoId) {
-                // cancel ongoing countdown
-                clearInterval(countdownInterval);
-                countdownInterval = null;
-                countdownSeconds = 3;
-                harvestingTomato = false;
-                sameIdDuration = 0;
+                if (currentMatchedTomatoId !== null) {
+                    window.updateTomatoHighlight(currentMatchedTomatoId, false);
+                }
                 
-                // set new tomato ID
+                sameIdDuration = 0;
+                harvestingTomato = false;
                 currentMatchedTomatoId = data.matched_id;
                 if (currentMatchedTomatoId !== null) {
                     lastMatchedTomatoTime = now;
+                    window.updateTomatoHighlight(currentMatchedTomatoId, true);
                 }
             } 
-            // same tomato is selected continuously
             else if (data.matched_id === currentMatchedTomatoId) {
                 sameIdDuration = now - lastMatchedTomatoTime;
                 
-                // 3 seconds or more of same tomato selection and countdown not started yet
-                if (sameIdDuration >= 3000 && !countdownInterval && !harvestingTomato) {
-                    startHarvestCountdown();
+                if (sameIdDuration >= 4500 && !harvestingTomato) {
+                    harvestingTomato = true;
+                    socket.emit('execute_robot_sequence', {
+                        tomato_id: currentMatchedTomatoId
+                    });
                 }
             }
-            
             updateTitleMessage();
         });
-
-        function startHarvestCountdown() {
-            countdownSeconds = 3;
-            harvestingTomato = false;
-            
-            countdownInterval = setInterval(function() {
-                countdownSeconds--;
-                updateTitleMessage();
-                
-                if (countdownSeconds <= 0) {
-                    clearInterval(countdownInterval);
-                    countdownInterval = null;
-                    harvestingTomato = true;
-                    updateTitleMessage();
-                    
-                    // request robot sequence
-                    if (currentMatchedTomatoId !== null) {
-                        socket.emit('execute_robot_sequence', {
-                            tomato_id: currentMatchedTomatoId
-                        });
-                    }
-                }
-            }, 1000);
-        }
 
         socket.on('robot_sequence_complete', function(data) {
             if (data.tomato_id === currentMatchedTomatoId) {
                 document.getElementById('title').innerHTML = 
                     `<p><span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">${data.tomato_id}번 토마토</span>를 수확 완료하였습니다! ✨</p>`;
+                window.updateTomatoHighlight(currentMatchedTomatoId, false);
                 currentMatchedTomatoId = null;
+            }
+        });
+
+        socket.on('mode_change', function(data) {
+            const modeIndicator = document.getElementById('mode-indicator');
+            const loggingMessage = document.getElementById('logging-message');
+            
+            if (!loggingMessage) {
+                console.error('logging-message element not found');
+                return;
+            }
+            
+            modeIndicator.textContent = `Mode: ${data.mode.charAt(0).toUpperCase() + data.mode.slice(1)}`;
+            currentMode = data.mode;
+            
+            console.log('Mode changed to:', data.mode);
+            
+            if (data.mode === 'logging') {
+                loggingMessage.classList.add('show');
+                console.log('Added show class');
+            } else {
+                loggingMessage.classList.remove('show');
+                console.log('Removed show class');
             }
         });
 
         function updateTitleMessage() {
             if (!streaming || !firstFrameReceived || document.getElementById('waiting-screen').style.display === 'flex') {
-                // no stream or no frame received or waiting screen
                 document.getElementById('title').innerHTML = '<p>안녕하세요🙌</p>';
                 return;
             }
 
             if (currentMatchedTomatoId !== null) {
                 if (harvestingTomato) {
-                    // harvesting state
                     document.getElementById('title').innerHTML = 
                         `<p><span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">${currentMatchedTomatoId}번 토마토</span>를 수확 중입니다... ✂️</p>`;
                 } 
-                else if (countdownInterval) {
-                    // countdown state
-                    document.getElementById('title').innerHTML = 
-                        `<p><span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">${countdownSeconds}초</span> 후에 <span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">${currentMatchedTomatoId}번 토마토</span>를 수확합니다 🍅</p>`;
+                else if (sameIdDuration >= 1500) {
+                    if (sameIdDuration < 4500) {
+                        const remainingTime = Math.ceil((4.5 - sameIdDuration/1000));
+                        document.getElementById('title').innerHTML = 
+                            `<p>계속 가리키시면 <span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">${remainingTime}초</span> 후에 <span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">${currentMatchedTomatoId}번 토마토</span>를 수확합니다 🍅</p>`;
+                    }
                 }
-                else if (sameIdDuration < 3000) {
-                    // tomato selection initial state
+                else {
                     document.getElementById('title').innerHTML = 
-                        `<p><span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">${currentMatchedTomatoId}번 토마토</span>를 선택하였습니다 ✅</p>`;
+                        `<p><span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">${currentMatchedTomatoId}번 토마토</span>가 맞으신가요? 🤔</p>`;
                 }
             } else {
                 if (document.getElementById('stream-screen').style.display === 'block') {
-                    // stream is active
                     document.getElementById('title').innerHTML = 
-                        '<p>수확할 <span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">토마토</span>를 손가락으로 선택해주세요👆🏻</p>';
+                        '<p>수확하고자 하는 <span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">토마토</span>를 손으로 가리켜주세요 👆🏻</p>';
                 } else {
-                    // stream is inactive
                     document.getElementById('title').innerHTML = '<p>안녕하세요🙌</p>';
                 }
             }
@@ -598,12 +490,43 @@
             socket.emit('start_stream');
             streaming = true;
         }
+
+        // modify the keyboard event listener
+        document.addEventListener('keydown', function(event) {
+            // l key always works (for mode switching)
+            if (event.key.toLowerCase() === 'l') {
+                socket.emit('key_press', { key: 'l' });
+                return;
+            }
+            
+            // process other keys only when in logging mode
+            if (currentMode === 'logging') {
+                // ESC key
+                if (event.key === 'Escape') {
+                    socket.emit('key_press', { key: 'Escape' });
+                }
+                // 1-4 키
+                else if (['1', '2', '3', '4'].includes(event.key)) {
+                    socket.emit('key_press', { key: event.key });
+                }
+            }
+        });
+
+        // event listener for the coordinate saved message
+        socket.on('coordinate_saved', function(data) {
+            const notification = document.getElementById('save-notification');
+            notification.textContent = `${data.tomato_id}번 토마토의 좌표가 저장되었습니다!`;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 1500);
+        });
     </script>
-    
     <script type="module">
         import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-        function main() {
-            const canvas = document.getElementById('canvas');
+        function renderHand() {
+            const canvas = document.getElementById('canvas-hand');
             const renderer = new THREE.WebGLRenderer({
                 canvas, 
                 antialias: true,
@@ -721,7 +644,256 @@
             
             requestAnimationFrame(render);
         }
-        main();
+
+        function renderTomatoTree() {
+            const canvas = document.getElementById('canvas-tomato');
+            const renderer = new THREE.WebGLRenderer({
+                canvas,
+                antialias: true,
+                alpha: true
+            });
+
+            const size = Math.max(window.innerWidth, window.innerHeight);
+            renderer.setSize(size * 0.3, size * 0.3);
+            
+            renderer.setClearColor(0x000000, 0);
+
+            const fov = 75;
+            const aspect = canvas.clientWidth / canvas.clientHeight;
+            const near = 0.1;
+            const far = 100;
+
+            const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+            camera.position.set(0, 2, 5);
+            camera.lookAt(0, 0, 0);
+
+            const scene = new THREE.Scene();
+
+            // lighting setup
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 5, 5);
+            scene.add(ambientLight, directionalLight);
+
+            // create the tree stem
+            const stemGroup = new THREE.Group();
+            
+            const mainStemShape = new THREE.Shape();
+            mainStemShape.moveTo(-0.15, -3);
+            mainStemShape.lineTo(0.15, -3);
+            mainStemShape.lineTo(0, 3);
+            mainStemShape.lineTo(-0.15, -3);
+
+            const extrudeSettings = {
+                steps: 1,
+                depth: 0.3,
+                bevelEnabled: false
+            };
+
+            const mainStemGeometry = new THREE.ExtrudeGeometry(mainStemShape, extrudeSettings);
+            const stemMaterial = new THREE.MeshPhongMaterial({ color: 0x2d5a27 });
+            const mainStem = new THREE.Mesh(mainStemGeometry, stemMaterial);
+            mainStem.position.z = -0.15;
+            stemGroup.add(mainStem);
+
+            // left branch (cone)
+            const leftBranchGeometry = new THREE.ConeGeometry(0.15, 2, 8);
+            const leftBranch = new THREE.Mesh(leftBranchGeometry, stemMaterial);
+            leftBranch.position.set(-0.95, 1, 0);
+            leftBranch.rotation.z = Math.PI / 2.5;
+            stemGroup.add(leftBranch);
+
+            // right branch (cone)
+            const rightBranchGeometry = new THREE.ConeGeometry(0.15, 2, 8);
+            const rightBranch = new THREE.Mesh(rightBranchGeometry, stemMaterial);
+            rightBranch.position.set(1, -1, 0);
+            rightBranch.rotation.z = -Math.PI / 2.5;
+            stemGroup.add(rightBranch);
+
+            scene.add(stemGroup);
+
+            // function to create tomatoes and stems
+            function createTomatoWithStem(position, index) {
+                const tomatoGroup = new THREE.Group();
+                
+                // create the stem shape
+                const stemShape = new THREE.Shape();
+                stemShape.moveTo(-0.1, 0);    // starting point
+                stemShape.lineTo(0.1, 0);     // bottom width
+                stemShape.lineTo(0, 0.3);     // top pointy part
+                stemShape.lineTo(-0.1, 0);    
+
+                const stemExtrudeSettings = {
+                    steps: 1,
+                    depth: 0.1,
+                    bevelEnabled: false
+                };
+
+                const stemGeometry = new THREE.ExtrudeGeometry(stemShape, stemExtrudeSettings);
+                const stemMaterial = new THREE.MeshPhongMaterial({ color: 0x2d5a27 });
+                const stem = new THREE.Mesh(stemGeometry, stemMaterial);
+                stem.position.set(0, 0.4, 0);
+                stem.rotation.z = Math.PI;
+
+                // add the stem leaf (small triangles 2)
+                const leafShape1 = new THREE.Shape();
+                leafShape1.moveTo(0, 0);
+                leafShape1.lineTo(0.2, 0.1);
+                leafShape1.lineTo(0, 0.2);
+                leafShape1.lineTo(0, 0);
+
+                const leafShape2 = new THREE.Shape();
+                leafShape2.moveTo(0, 0);
+                leafShape2.lineTo(-0.2, 0.1);
+                leafShape2.lineTo(0, 0.2);
+                leafShape2.lineTo(0, 0);
+
+                const leafGeometry1 = new THREE.ExtrudeGeometry(leafShape1, stemExtrudeSettings);
+                const leafGeometry2 = new THREE.ExtrudeGeometry(leafShape2, stemExtrudeSettings);
+                
+                const leaf1 = new THREE.Mesh(leafGeometry1, stemMaterial);
+                const leaf2 = new THREE.Mesh(leafGeometry2, stemMaterial);
+                
+                leaf1.position.set(0, 0.4, 0);
+                leaf2.position.set(0, 0.4, 0);
+                
+                // tomato creation
+                const tomatoGeometry = new THREE.SphereGeometry(0.4, 16, 16);
+                const tomatoMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+                const tomato = new THREE.Mesh(tomatoGeometry, tomatoMaterial);
+                
+                tomato.userData.id = index + 1;
+                
+                // create the number texture
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = canvas.height = 128;
+                context.fillStyle = 'white';
+                context.font = 'bold 64px Arial';
+                context.textAlign = 'center';
+                context.textBaseline = 'middle';
+                context.fillText(index + 1, 64, 64);
+                
+                const numberTexture = new THREE.CanvasTexture(canvas);
+                const numberMaterial = new THREE.MeshBasicMaterial({ 
+                    map: numberTexture,
+                    transparent: true
+                });
+                
+                const numberPlane = new THREE.Mesh(
+                    new THREE.PlaneGeometry(0.3, 0.3),
+                    numberMaterial
+                );
+                numberPlane.position.z = 0.41;
+                tomato.add(numberPlane);
+
+                tomatoGroup.add(tomato);
+                tomatoGroup.add(stem);
+                tomatoGroup.add(leaf1);
+                tomatoGroup.add(leaf2);
+
+                tomatoGroup.position.set(position.x, position.y, position.z);
+
+                return tomatoGroup;
+            }
+
+            // set the position of the tomatoes and create them
+            const tomatoPositions = [
+                { x: -1.8, y: 0, z: 0 },
+                { x: -0.8, y: 0, z: 0 },    // two tomatoes on the left
+                { x: 0, y: 2.5, z: 0 },     // top
+                { x: 1, y: -2, z: 0 }       // bottom right
+            ];
+
+            const treeGroup = new THREE.Group();
+            treeGroup.add(stemGroup);
+
+            tomatoPositions.forEach((pos, index) => {
+                const tomatoWithStem = createTomatoWithStem(pos, index);
+                treeGroup.add(tomatoWithStem);
+            });
+
+            scene.add(treeGroup);
+
+            // smooth animation for the tree
+            function animate() {
+                requestAnimationFrame(animate);
+                const time = Date.now() * 0.001;
+                const floatHeight = Math.sin(time) * 0.1;
+                treeGroup.position.y = floatHeight;
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // tomato color change function
+            function updateTomatoColor(id, isSelected) {
+                treeGroup.traverse((child) => {
+                    if (child instanceof THREE.Mesh && child.userData.id === id) {
+                        if (child.material.color) {
+                            if (child.parent.userData.animationId) {
+                                cancelAnimationFrame(child.parent.userData.animationId);
+                            }
+
+                            if (isSelected) {
+                                // set the material of the selected tomato
+                                child.material.color.setHex(0xff0000);  // default red color
+                                child.material.emissive = new THREE.Color(0xaaaaaa);  // intensity of the light
+                                child.material.emissiveIntensity = 0.5;  // intensity of the light
+                                
+                                // animation for the size and the intensity of the light
+                                const pulseAnimation = () => {
+                                    const time = Date.now() * 0.001;
+                                    const pulseFactor = 1.2 + Math.sin(time * 3) * 0.05;
+                                    child.parent.scale.set(pulseFactor, pulseFactor, pulseFactor);
+                                    
+                                    child.material.emissiveIntensity = 0.5 + Math.sin(time * 5) * 0.3;
+                                };
+                                
+                                function animate() {
+                                    pulseAnimation();
+                                    child.parent.userData.animationId = requestAnimationFrame(animate);
+                                }
+                                animate();
+                            } else {
+                                // if not selected, set the color to the original color
+                                child.material.color.setHex(0xff0000);
+                                child.material.emissive = new THREE.Color(0x000000);
+                                child.material.emissiveIntensity = 0;
+                                
+                                const startScale = child.parent.scale.x;
+                                const startTime = Date.now();
+                                const duration = 500;
+
+                                function shrinkAnimation() {
+                                    const currentTime = Date.now();
+                                    const elapsed = currentTime - startTime;
+                                    const progress = Math.min(elapsed / duration, 1);
+                                    
+                                    // easeOutQuad 이징 함수 적용
+                                    const scale = startScale + (1 - startScale) * (1 - Math.pow(1 - progress, 2));
+                                    child.parent.scale.set(scale, scale, scale);
+
+                                    if (progress < 1) {
+                                        child.parent.userData.animationId = requestAnimationFrame(shrinkAnimation);
+                                    } else {
+                                        child.parent.userData.animationId = null;
+                                    }
+                                }
+                                
+                                shrinkAnimation();
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Add this line to make the updateTomatoHighlight function available to the global scope
+            window.updateTomatoHighlight = updateTomatoColor;
+        }   
+
+        renderHand();
+        renderTomatoTree();
+        
     </script>
 </body>
 </html>

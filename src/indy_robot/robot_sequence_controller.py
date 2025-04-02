@@ -75,13 +75,17 @@ class RobotSequenceController:
             elif cmd_type == "Sleep":
                 self._execute_sleep(command["condition"]["time"])
             elif cmd_type == "GripperOpen":
-                self.dxl.Gripper_open()
+                # self.dxl.Gripper_open()
+                pass
             elif cmd_type == "Grippergrasp1":
-                self.dxl.Gripper_grasp1()
+                # self.dxl.Gripper_grasp1()
+                pass
             elif cmd_type == "Grippergrasp2":
-                self.dxl.Gripper_grasp2()
+                # self.dxl.Gripper_grasp2()
+                pass
             elif cmd_type == "GripperClose":
-                self.dxl.Gripper_close()
+                # self.dxl.Gripper_close()
+                pass
 
         print(f"Sequence {sequence_number} execution completed")
         success = True
@@ -92,29 +96,29 @@ class RobotSequenceController:
         """execute MoveJ command"""
         for i, wp in enumerate(waypoints):
             print(f"Executing MOVEJ [{i+1}] to position... {wp}")
-            self.indy.set_joint_vel_level(2)
-            self.indy.joint_move_to(wp)
-            while not self.indy.get_robot_status()["movedone"]:
-                time.sleep(0.1)
+            # self.indy.set_joint_vel_level(2)
+            # self.indy.joint_move_to(wp)
+            # while not self.indy.get_robot_status()["movedone"]:
+            #     time.sleep(0.1)
                 
     def _execute_movel(self, waypoints):
         """execute MoveL command"""
         for i, wp in enumerate(waypoints):
             converted_wp = [wp[0], wp[1], wp[2]] + wp[3:]
             print(f"Executing MOVEL [{i+1}] to position... {converted_wp}")
-            self.indy.set_task_vel_level(2)
-            self.indy.task_move_to(converted_wp)
-            while not self.indy.get_robot_status()["movedone"]:
-                time.sleep(0.1)
+            # self.indy.set_task_vel_level(2)
+            # self.indy.task_move_to(converted_wp)
+            # while not self.indy.get_robot_status()["movedone"]:
+            #     time.sleep(0.1)
                 
     def _execute_movehome(self):
         """execute MoveHome command"""
         home_position = [0, 0, -90, 0, -90, 0]
         print(f"Executing MOVEHOME to position... {home_position}")
-        self.indy.set_joint_vel_level(2)
-        self.indy.joint_move_to(home_position)
-        while not self.indy.get_robot_status()["movedone"]:
-            time.sleep(0.1)
+        # self.indy.set_joint_vel_level(2)
+        # self.indy.joint_move_to(home_position)
+        # while not self.indy.get_robot_status()["movedone"]:
+        #     time.sleep(0.1)
             
     def _execute_sleep(self, sleep_time):
         """execute Sleep command"""
