@@ -135,16 +135,31 @@ class HandTracker:
             center = self.tomato_coordinates[tomato_key]["center"]
             
             if center:
-                # display the center point in red
-                cv.circle(debug_image, (center["x"], center["y"]), 5, (0, 0, 255), -1)
-                # display the tomato number
-                cv.putText(debug_image, 
-                          f"#{tomato_id}", 
-                          (center["x"] + 10, center["y"] + 10), 
-                          cv.FONT_HERSHEY_SIMPLEX, 
-                          0.6, 
-                          (0, 0, 255), 
-                          2)
+                x, y = center["x"], center["y"]
+                
+                cross_size = 15
+                outer_thickness = 6
+                inner_thickness = 3
+                
+                cv.line(debug_image, (x - cross_size, y), (x + cross_size, y), (0, 0, 0), outer_thickness)
+                cv.line(debug_image, (x, y - cross_size), (x, y + cross_size), (0, 0, 0), outer_thickness)
+                
+                cv.line(debug_image, (x - cross_size, y),  (x + cross_size, y), (255, 255, 255), inner_thickness)
+                cv.line(debug_image, (x, y - cross_size), (x, y + cross_size), (255, 255, 255), inner_thickness)
+                
+                text = f"{tomato_id}"
+                font_scale = 1.2
+                font_thickness = 2
+                
+                (text_width, text_height), _ = cv.getTextSize(text, cv.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)
+                
+                text_x = x + cross_size + 5
+                text_y = y - cross_size - 5
+                
+                cv.putText(debug_image, text, (text_x, text_y), cv.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 0), font_thickness + 3)
+                
+                cv.putText(debug_image, text, (text_x, text_y), cv.FONT_HERSHEY_SIMPLEX, font_scale, (255, 255, 255), font_thickness)
+                
         return debug_image
 
     def process_frame(self, image, debug_image, number, key, use_point_tracker=False, mode=None):

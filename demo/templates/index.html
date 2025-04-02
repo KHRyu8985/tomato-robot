@@ -258,9 +258,59 @@
             opacity: 1;
             visibility: visible;
         }
+
+        .countdown-container {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .countdown-circle {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            transform: translate(-50%, -50%);
+            left: 50%;
+            top: 50%;
+        }
+
+        .countdown-circle svg {
+            transform: rotate(-90deg);
+            width: 60px;
+            height: 60px;
+        }
+
+        .countdown-circle circle {
+            fill: none;
+            stroke-width: 3;
+        }
+
+        .countdown-background {
+            stroke: rgba(0, 4, 255, 0.1);
+        }
+
+        .countdown-progress {
+            stroke: #0004FF;
+            background-color: rgba(0, 4, 255, 0.1);
+            transition: stroke-dashoffset 0.1s linear;
+        }
+
+        .countdown-number {
+            position: relative;
+            z-index: 1;
+            font-size: 24px;
+            font-weight: bold;
+            color: #0004FF;
+            margin: 0 10px;
+        }
     </style>
 </head>
 <body>
+    <audio id="popSound" src="{{ url_for('static', filename='audio/pop.mp3') }}" preload="auto"></audio>
+    <audio id="alertSound" src="{{ url_for('static', filename='audio/alert.mp3') }}" preload="auto"></audio>
+    <audio id="successSound" src="{{ url_for('static', filename='audio/success.mp3') }}" preload="auto"></audio>
+    
     <div class="background-circle" id="circle1"></div>
     <div class="background-circle" id="circle2"></div>
     <div class="background-circle" id="circle3"></div>
@@ -301,7 +351,7 @@
         </div>
     </div>
     
-    <div id="logging-message">1-4 키를 눌러 토마토 좌표를 저장하세요. (ESC: 인퍼런스 모드로 돌아가기)</div>
+    <div id="logging-message">1-4 키를 눌러 토마토 좌표를 저장하세요 (ESC: 인퍼런스 모드로 돌아가기)</div>
     <div id="save-notification"></div>
     
     <script>
@@ -317,6 +367,20 @@
         
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('video-toggle').checked = videoEnabled;
+            
+            const sounds = ['popSound', 'alertSound', 'successSound'];
+            sounds.forEach(soundId => {
+                const audio = document.getElementById(soundId);
+                audio.load();
+
+                audio.addEventListener('loadeddata', () => {
+                    console.log(`${soundId} loaded successfully`);
+                });
+            
+                audio.addEventListener('error', (e) => {
+                    console.error(`Error loading ${soundId}:`, e);
+                });
+            });
             
             startStream();
             toggleVideoFeed();
@@ -393,8 +457,21 @@
             }
         });
 
+        const popSound = document.getElementById('popSound');
+        const alertSound = document.getElementById('alertSound');
+        const successSound = document.getElementById('successSound');
+        let lastMatchedId = null;
+        
         socket.on('tomato_match_result', function(data) {
             const now = Date.now();
+            
+            if (data.matched_id !== null && data.matched_id !== lastMatchedId) {
+                popSound.currentTime = 0;
+                popSound.play().catch(function(error) {
+                    console.log("Audio play failed:", error);
+                });
+                lastMatchedId = data.matched_id;
+            }
             
             if (data.matched_id === null || data.matched_id !== currentMatchedTomatoId) {
                 if (currentMatchedTomatoId !== null) {
@@ -414,6 +491,10 @@
                 
                 if (sameIdDuration >= 4500 && !harvestingTomato) {
                     harvestingTomato = true;
+                    alertSound.currentTime = 0;
+                    alertSound.play().catch(function(error) {
+                        console.log("Alert sound play failed:", error);
+                    });
                     socket.emit('execute_robot_sequence', {
                         tomato_id: currentMatchedTomatoId
                     });
@@ -424,6 +505,11 @@
 
         socket.on('robot_sequence_complete', function(data) {
             if (data.tomato_id === currentMatchedTomatoId) {
+                successSound.currentTime = 0;
+                successSound.play().catch(function(error) {
+                    console.log("Success sound play failed:", error);
+                });
+                
                 document.getElementById('title').innerHTML = 
                     `<p><span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">${data.tomato_id}번 토마토</span>를 수확 완료하였습니다! ✨</p>`;
                 window.updateTomatoHighlight(currentMatchedTomatoId, false);
@@ -454,6 +540,44 @@
             }
         });
 
+        function createCountdownCircle() {
+            const container = document.createElement("div");
+            container.className = "countdown-container";
+            
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            
+            const backgroundCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            backgroundCircle.setAttribute("cx", "30");
+            backgroundCircle.setAttribute("cy", "30");
+            backgroundCircle.setAttribute("r", "25");
+            backgroundCircle.setAttribute("class", "countdown-background");
+            
+            const progressCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            progressCircle.setAttribute("cx", "30");
+            progressCircle.setAttribute("cy", "30");
+            progressCircle.setAttribute("r", "25");
+            progressCircle.setAttribute("class", "countdown-progress");
+            
+            const circumference = 2 * Math.PI * 25;
+            progressCircle.style.strokeDasharray = circumference;
+            progressCircle.style.strokeDashoffset = circumference;
+            
+            svg.appendChild(backgroundCircle);
+            svg.appendChild(progressCircle);
+            
+            const circleContainer = document.createElement("div");
+            circleContainer.className = "countdown-circle";
+            circleContainer.appendChild(svg);
+            
+            const numberSpan = document.createElement("span");
+            numberSpan.className = "countdown-number";
+            
+            container.appendChild(circleContainer);
+            container.appendChild(numberSpan);
+            
+            return { container, progressCircle, circumference, numberSpan };
+        }
+
         function updateTitleMessage() {
             if (!streaming || !firstFrameReceived || document.getElementById('waiting-screen').style.display === 'flex') {
                 document.getElementById('title').innerHTML = '<p>안녕하세요🙌</p>';
@@ -467,9 +591,20 @@
                 } 
                 else if (sameIdDuration >= 1500) {
                     if (sameIdDuration < 4500) {
+                        const { container, progressCircle, circumference, numberSpan } = createCountdownCircle();
+                        const progress = (sameIdDuration - 1500) / 3000;
+                        const offset = circumference * (1 - progress);
+                        progressCircle.style.strokeDashoffset = offset;
+                        
                         const remainingTime = Math.ceil((4.5 - sameIdDuration/1000));
-                        document.getElementById('title').innerHTML = 
-                            `<p>계속 가리키시면 <span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">${remainingTime}초</span> 후에 <span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">${currentMatchedTomatoId}번 토마토</span>를 수확합니다 🍅</p>`;
+                        numberSpan.textContent = remainingTime;
+                        
+                        const titleElement = document.createElement('p');
+                        titleElement.innerHTML = 
+                            `계속 가리키면 <span style="display: inline-flex; align-items: center; padding: 5px 15px; border-radius: 25px;">${container.outerHTML}</span> 후에 <span style="background-color: rgba(0, 4, 255, 0.1); padding: 5px; border-radius: 25px;">${currentMatchedTomatoId}번 토마토</span>를 수확합니다 🍅`;
+                        
+                        document.getElementById('title').innerHTML = '';
+                        document.getElementById('title').appendChild(titleElement);
                     }
                 }
                 else {

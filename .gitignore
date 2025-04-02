@@ -196,3 +196,6 @@ checkpoints/*.pt
 
 # zed sdk
 sdk/*.whl
+
+# tomato coordinates
+src/hand_gesture/data/*.json

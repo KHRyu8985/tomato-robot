@@ -56,6 +56,14 @@ def process_video():
     last_nearest_tomato = None
     selection_start_time = None
     selected_tomato = None
+
+    # initialize robot controller (only when robot-control option is True)
+    # if robot_controller.connect():
+    #     print("[INFO] connected to robot controller")
+    #     robot_control = True
+    # else:
+    #     print("[Error] failed to connect to robot controller")
+    #     robot_control = False
     
     while thread_running:
         ret, frame = cap.read()
